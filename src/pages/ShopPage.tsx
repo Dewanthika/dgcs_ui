@@ -2,14 +2,18 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ChevronDown } from "lucide-react"
 import ProductCard from "../components/ProductCard"
+import { getAllProducts } from "../services/productService"
 
 interface Product {
   id: number
   title: string
   price: number
+  originalPrice?: number
+  discountPercentage?: number
+  category: string
   imageUrl: string
 }
 
@@ -22,19 +26,32 @@ interface Category {
 
 const ShopPage = () => {
   const [searchTerm, setSearchTerm] = useState("")
-  const [categories, setCategories] = useState<Category[]>([
-    { id: 1, name: "Tag", count: 8, checked: false },
-    { id: 2, name: "Tag", count: 2, checked: false },
-  ])
+  const [categories, setCategories] = useState<Category[]>([])
   const [showCategories, setShowCategories] = useState(true)
+  const [products, setProducts] = useState<Product[]>([])
 
-  // Sample products data
-  const products: Product[] = Array.from({ length: 15 }, (_, i) => ({
-    id: i + 1,
-    title: "Product Title",
-    price: 9999,
-    imageUrl: "/placeholder.svg?height=200&width=200",
-  }))
+  useEffect(() => {
+    // Load products from our service
+    const allProducts = getAllProducts()
+    setProducts(allProducts)
+
+    // Generate categories from products
+    const categoryMap = new Map<string, number>()
+
+    allProducts.forEach((product) => {
+      const count = categoryMap.get(product.category) || 0
+      categoryMap.set(product.category, count + 1)
+    })
+
+    const categoryList: Category[] = Array.from(categoryMap).map(([name, count], index) => ({
+      id: index + 1,
+      name,
+      count,
+      checked: false,
+    }))
+
+    setCategories(categoryList)
+  }, [])
 
   const handleCategoryChange = (categoryId: number) => {
     setCategories(
@@ -46,6 +63,7 @@ const ShopPage = () => {
 
   const clearAllFilters = () => {
     setCategories(categories.map((category) => ({ ...category, checked: false })))
+    setSearchTerm("")
   }
 
   const handleSearch = (e: React.FormEvent) => {
@@ -53,6 +71,18 @@ const ShopPage = () => {
     console.log("Searching for:", searchTerm)
     // Implement search functionality
   }
+
+  // Filter products based on selected categories and search term
+  const filteredProducts = products.filter((product) => {
+    // Check if any category is selected
+    const selectedCategories = categories.filter((cat) => cat.checked).map((cat) => cat.name)
+    const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category)
+
+    // Check if product matches search term
+    const matchesSearch = searchTerm === "" || product.title.toLowerCase().includes(searchTerm.toLowerCase())
+
+    return matchesCategory && matchesSearch
+  })
 
   return (
     <div className="container py-8">
@@ -112,11 +142,24 @@ const ShopPage = () => {
         {/* Product grid */}
         <div className="flex-1">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((product) => (
-              <div key={product.id}>
-                <ProductCard id={product.id} title={product.title} price={product.price} imageUrl={product.imageUrl} />
+            {filteredProducts.length > 0 ? (
+              filteredProducts.map((product) => (
+                <div key={product.id}>
+                  <ProductCard
+                    id={product.id}
+                    title={product.title}
+                    price={product.price}
+                    originalPrice={product.originalPrice}
+                    discountPercentage={product.discountPercentage}
+                    imageUrl={product.imageUrl}
+                  />
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-500">No products found. Try adjusting your filters.</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>

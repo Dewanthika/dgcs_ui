@@ -16,10 +16,12 @@ import AdminDashboardPage from "./pages/AdminDashboardPage"
 import CustomerDashboardPage from "./pages/CustomerDashboardPage"
 import VendorDashboardPage from "./pages/VendorDashboardPage"
 import ShippingDashboardPage from "./pages/ShippingDashboardPage"
+import AddProductPage from "./pages/AddProductPage"
+import ProductsListPage from "./pages/ProductsListPage"
 
 function App() {
   // In a real app, you would determine user type from authentication
-  const userType = "shipping" // Options: 'admin', 'customer', 'vendor', 'shipping'
+  const userType = "admin" // Options: 'admin', 'customer', 'vendor', 'shipping'
 
   // Function to render the appropriate dashboard based on user type
   const renderDashboard = () => {
@@ -45,6 +47,8 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/dashboard" element={renderDashboard()} />
+          <Route path="/admin/products" element={<ProductsListPage />} />
+          <Route path="/admin/products/add" element={<AddProductPage />} />
           <Route
             path="*"
             element={

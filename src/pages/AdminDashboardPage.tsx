@@ -12,6 +12,7 @@ import {
   BarChart3,
   ChevronDown,
 } from "lucide-react"
+import { Link } from "react-router-dom"
 
 const AdminDashboardPage = () => {
   const [selectedMonth, setSelectedMonth] = useState("November 2021")
@@ -54,11 +55,13 @@ const AdminDashboardPage = () => {
             <ShoppingCart className="w-5 h-5 mr-3" />
             Orders
           </div>
-
+          <Link to="/admin/products">
           <div className="px-4 py-3 flex items-center text-gray-700 hover:bg-gray-100">
             <Package className="w-5 h-5 mr-3" />
             Product
           </div>
+          </Link>  
+          
 
           <div className="px-4 py-3 flex items-center text-gray-700 hover:bg-gray-100">
             <Warehouse className="w-5 h-5 mr-3" />
