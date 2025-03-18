@@ -1,32 +1,32 @@
+"use client"
+
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { Plus, Eye, Edit, Trash2 } from "lucide-react"
-import { getAllOrders, deleteOrder } from "../services/orderService"
 
 interface OrderItem {
-  productId: number
-  productTitle: string
+  orderItemID: string
+  productID: number
+  productName: string
   quantity: number
   price: number
 }
 
 interface Order {
   id: number
+  orderID: string
+  userID: string
   customerName: string
   contact: string
-  email: string
-  address: string
-  city: string
-  district: string
-  postalCode: string
-  paymentDate: string
-  paymentStatus: string
-  items: OrderItem[]
-  totalAmount: number
+  deliveryAddress: string
+  orderWeight: number
+  deliveryCharge: number
+  orderType: string
+  paymentMethod: string
   orderStatus: string
+  totalAmount: number
   orderDate: string
-  createdAt: string
-  updatedAt?: string
+  orderItems: OrderItem[]
 }
 
 const OrdersListPage = () => {
@@ -35,34 +35,141 @@ const OrdersListPage = () => {
   const [searchTerm, setSearchTerm] = useState<string>("")
 
   useEffect(() => {
-    // Load orders from our service
-    const loadedOrders = getAllOrders()
-    setOrders(loadedOrders)
+    // Load mock orders data
+    const mockOrders: Order[] = [
+      {
+        id: 1,
+        orderID: "ORD001",
+        userID: "USR002",
+        customerName: "John Doe",
+        contact: "+94 234 567 890",
+        deliveryAddress: "456 Customer Ave, Kandy, Central Province, 20000",
+        orderWeight: 2.5,
+        deliveryCharge: 350,
+        orderType: "Standard",
+        paymentMethod: "Credit Card",
+        orderStatus: "Processing",
+        totalAmount: 2850,
+        orderDate: "2023-07-15",
+        orderItems: [
+          {
+            orderItemID: "ITEM001",
+            productID: 101,
+            productName: "Smartphone X",
+            quantity: 1,
+            price: 799,
+          },
+          {
+            orderItemID: "ITEM002",
+            productID: 103,
+            productName: "Wireless Headphones",
+            quantity: 1,
+            price: 149,
+          },
+        ],
+      },
+      {
+        id: 2,
+        orderID: "ORD002",
+        userID: "USR003",
+        customerName: "Jane Smith",
+        contact: "+94 345 678 901",
+        deliveryAddress: "789 User Blvd, Galle",
+        orderWeight: 1.2,
+        deliveryCharge: 250,
+        orderType: "Express",
+        paymentMethod: "Cash on Delivery",
+        orderStatus: "Shipped",
+        totalAmount: 1549,
+        orderDate: "2023-07-14",
+        orderItems: [
+          {
+            orderItemID: "ITEM003",
+            productID: 104,
+            productName: "Smart Watch",
+            quantity: 1,
+            price: 249,
+          },
+          {
+            orderItemID: "ITEM004",
+            productID: 105,
+            productName: "Bluetooth Speaker",
+            quantity: 1,
+            price: 99,
+          },
+        ],
+      },
+      {
+        id: 3,
+        orderID: "ORD003",
+        userID: "USR002",
+        customerName: "John Doe",
+        contact: "+94 234 567 890",
+        deliveryAddress: "456 Customer Ave, Kandy, Central Province, 20000",
+        orderWeight: 3.8,
+        deliveryCharge: 450,
+        orderType: "Standard",
+        paymentMethod: "Credit Card",
+        orderStatus: "Delivered",
+        totalAmount: 1749,
+        orderDate: "2023-07-10",
+        orderItems: [
+          {
+            orderItemID: "ITEM005",
+            productID: 102,
+            productName: "Laptop Pro",
+            quantity: 1,
+            price: 1299,
+          },
+        ],
+      },
+      {
+        id: 4,
+        orderID: "ORD004",
+        userID: "USR006",
+        customerName: "New Customer",
+        contact: "+94 678 901 234",
+        deliveryAddress: "303 New User St, Matara",
+        orderWeight: 0.5,
+        deliveryCharge: 150,
+        orderType: "Express",
+        paymentMethod: "PayPal",
+        orderStatus: "Cancelled",
+        totalAmount: 249,
+        orderDate: "2023-07-12",
+        orderItems: [
+          {
+            orderItemID: "ITEM006",
+            productID: 104,
+            productName: "Smart Watch",
+            quantity: 1,
+            price: 249,
+          },
+        ],
+      },
+    ]
+
+    setOrders(mockOrders)
   }, [])
 
   const handleDeleteOrder = (id: number) => {
     if (window.confirm("Are you sure you want to delete this order?")) {
-      const success = deleteOrder(id)
-      if (success) {
-        setOrders(orders.filter((order) => order.id !== id))
-      } else {
-        alert("Failed to delete order")
-      }
+      setOrders(orders.filter((order) => order.id !== id))
     }
   }
 
   // Filter orders based on status and search term
   const filteredOrders = orders.filter((order) => {
-    const matchesStatus = selectedStatus === "all" || order.orderStatus === selectedStatus
+    const matchesStatus = selectedStatus === "all" || order.orderStatus.toLowerCase() === selectedStatus.toLowerCase()
     const matchesSearch =
       order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.contact.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      String(order.id).includes(searchTerm)
+      order.orderID.toLowerCase().includes(searchTerm.toLowerCase())
     return matchesStatus && matchesSearch
   })
 
   // Get unique statuses from orders
-  const statuses = ["all", ...new Set(orders.map((order) => order.orderStatus))]
+  const statuses = ["all", ...new Set(orders.map((order) => order.orderStatus.toLowerCase()))]
 
   return (
     <>
@@ -97,7 +204,7 @@ const OrdersListPage = () => {
             >
               {statuses.map((status) => (
                 <option key={status} value={status}>
-                  {status === "all" ? "All Statuses" : status}
+                  {status === "all" ? "All Statuses" : status.charAt(0).toUpperCase() + status.slice(1)}
                 </option>
               ))}
             </select>
@@ -114,6 +221,7 @@ const OrdersListPage = () => {
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Total</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Status</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Payment</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Type</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Actions</th>
               </tr>
             </thead>
@@ -121,7 +229,7 @@ const OrdersListPage = () => {
               {filteredOrders.length > 0 ? (
                 filteredOrders.map((order) => (
                   <tr key={order.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm font-medium">#{order.id}</td>
+                    <td className="px-4 py-3 text-sm font-medium">{order.orderID}</td>
                     <td className="px-4 py-3 text-sm">
                       <div>{order.customerName}</div>
                       <div className="text-xs text-gray-500">{order.contact}</div>
@@ -145,21 +253,8 @@ const OrdersListPage = () => {
                         {order.orderStatus}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs ${
-                          order.paymentStatus === "Paid"
-                            ? "bg-green-100 text-green-800"
-                            : order.paymentStatus === "Pending"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : order.paymentStatus === "Failed"
-                                ? "bg-red-100 text-red-800"
-                                : "bg-gray-100 text-gray-800"
-                        }`}
-                      >
-                        {order.paymentStatus}
-                      </span>
-                    </td>
+                    <td className="px-4 py-3 text-sm">{order.paymentMethod}</td>
+                    <td className="px-4 py-3 text-sm">{order.orderType}</td>
                     <td className="px-4 py-3 text-sm">
                       <div className="flex space-x-2">
                         <Link
@@ -189,7 +284,7 @@ const OrdersListPage = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="px-4 py-6 text-center text-gray-500">
+                  <td colSpan={8} className="px-4 py-6 text-center text-gray-500">
                     No orders found.{" "}
                     {searchTerm || selectedStatus !== "all"
                       ? "Try changing your filters."

@@ -7,12 +7,19 @@ import { Edit, Trash2, UserPlus, Search, Filter } from "lucide-react"
 
 interface User {
   id: number
-  name: string
+  userID: string
+  userTypeID: number
   email: string
-  role: "admin" | "customer" | "vendor" | "shipping"
+  fname: string
+  lname: string
+  dob: string
+  address: string
+  phone: string
+  joinedDate: string
+  customerID: string
+  password: string
+  userRole: "admin" | "customer" | "vendor" | "shipping"
   status: "active" | "inactive" | "pending"
-  lastLogin: string
-  createdAt: string
 }
 
 const UsersPage = () => {
@@ -21,76 +28,122 @@ const UsersPage = () => {
   const [roleFilter, setRoleFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
   const [showAddUserModal, setShowAddUserModal] = useState(false)
-  // Update the newUser state to match the fields in the UI
-  const [newUser, setNewUser] = useState({
-    customerType: "Individual Customer",
-    name: "",
-    dateOfBirth: "",
-    contact: "",
+  const [newUser, setNewUser] = useState<User>({
+    id: 0,
+    userID: "",
+    userTypeID: 1,
     email: "",
+    fname: "",
+    lname: "",
+    dob: "",
     address: "",
-    city: "",
-    district: "",
-    postalCode: "",
-    role: "customer" as const,
+    phone: "",
+    joinedDate: new Date().toISOString().split("T")[0],
+    customerID: "",
+    password: "",
+    userRole: "customer",
+    status: "active",
   })
+  const [isEditing, setIsEditing] = useState(false)
 
   useEffect(() => {
     // Generate mock users
     const mockUsers: User[] = [
       {
         id: 1,
-        name: "Admin User",
+        userID: "USR001",
+        userTypeID: 1,
         email: "admin@example.com",
-        role: "admin",
+        fname: "Admin",
+        lname: "User",
+        dob: "1990-01-01",
+        address: "123 Admin St, Colombo",
+        phone: "+94 123 456 789",
+        joinedDate: "2023-01-01",
+        customerID: "",
+        password: "********",
+        userRole: "admin",
         status: "active",
-        lastLogin: "2023-07-15 09:23:45",
-        createdAt: "2023-01-01",
       },
       {
         id: 2,
-        name: "John Doe",
+        userID: "USR002",
+        userTypeID: 2,
         email: "john@example.com",
-        role: "customer",
+        fname: "John",
+        lname: "Doe",
+        dob: "1985-05-15",
+        address: "456 Customer Ave, Kandy",
+        phone: "+94 234 567 890",
+        joinedDate: "2023-02-15",
+        customerID: "CUST001",
+        password: "********",
+        userRole: "customer",
         status: "active",
-        lastLogin: "2023-07-14 14:30:22",
-        createdAt: "2023-02-15",
       },
       {
         id: 3,
-        name: "Jane Smith",
+        userID: "USR003",
+        userTypeID: 2,
         email: "jane@example.com",
-        role: "customer",
+        fname: "Jane",
+        lname: "Smith",
+        dob: "1992-08-22",
+        address: "789 User Blvd, Galle",
+        phone: "+94 345 678 901",
+        joinedDate: "2023-03-10",
+        customerID: "CUST002",
+        password: "********",
+        userRole: "customer",
         status: "inactive",
-        lastLogin: "2023-06-30 11:45:10",
-        createdAt: "2023-03-10",
       },
       {
         id: 4,
-        name: "Vendor Company",
+        userID: "USR004",
+        userTypeID: 3,
         email: "vendor@example.com",
-        role: "vendor",
+        fname: "Vendor",
+        lname: "Company",
+        dob: "1980-12-10",
+        address: "101 Vendor St, Jaffna",
+        phone: "+94 456 789 012",
+        joinedDate: "2023-04-05",
+        customerID: "",
+        password: "********",
+        userRole: "vendor",
         status: "active",
-        lastLogin: "2023-07-15 08:12:33",
-        createdAt: "2023-04-05",
       },
       {
         id: 5,
-        name: "Shipping Partner",
+        userID: "USR005",
+        userTypeID: 4,
         email: "shipping@example.com",
-        role: "shipping",
+        fname: "Shipping",
+        lname: "Partner",
+        dob: "1988-07-30",
+        address: "202 Shipping Rd, Negombo",
+        phone: "+94 567 890 123",
+        joinedDate: "2023-05-20",
+        customerID: "",
+        password: "********",
+        userRole: "shipping",
         status: "active",
-        lastLogin: "2023-07-14 16:50:18",
-        createdAt: "2023-05-20",
       },
       {
         id: 6,
-        name: "New Customer",
+        userID: "USR006",
+        userTypeID: 2,
         email: "newcustomer@example.com",
-        role: "customer",
+        fname: "New",
+        lname: "Customer",
+        dob: "1995-03-15",
+        address: "303 New User St, Matara",
+        phone: "+94 678 901 234",
+        joinedDate: "2023-07-14",
+        customerID: "CUST003",
+        password: "********",
+        userRole: "customer",
         status: "pending",
-        lastLogin: "Never",
-        createdAt: "2023-07-14",
       },
     ]
 
@@ -105,33 +158,43 @@ const UsersPage = () => {
     }))
   }
 
-  // Update the handleAddUser function to work with the new fields
   const handleAddUser = (e: React.FormEvent) => {
     e.preventDefault()
 
-    const newUserObj: User = {
-      id: users.length + 1,
-      name: newUser.name,
-      email: newUser.email,
-      role: newUser.role,
-      status: "active",
-      lastLogin: "Never",
-      createdAt: new Date().toISOString().split("T")[0],
+    if (isEditing) {
+      // Update existing user
+      setUsers(users.map((user) => (user.id === newUser.id ? newUser : user)))
+      setIsEditing(false)
+    } else {
+      // Add new user
+      const newUserObj: User = {
+        ...newUser,
+        id: users.length + 1,
+        userID: `USR${String(users.length + 1).padStart(3, "0")}`,
+        joinedDate: new Date().toISOString().split("T")[0],
+        customerID: newUser.userRole === "customer" ? `CUST${String(users.length + 1).padStart(3, "0")}` : "",
+        status: "active",
+      }
+
+      setUsers([...users, newUserObj])
     }
 
-    setUsers([...users, newUserObj])
     setShowAddUserModal(false)
     setNewUser({
-      customerType: "Individual Customer",
-      name: "",
-      dateOfBirth: "",
-      contact: "",
+      id: 0,
+      userID: "",
+      userTypeID: 1,
       email: "",
+      fname: "",
+      lname: "",
+      dob: "",
       address: "",
-      city: "",
-      district: "",
-      postalCode: "",
-      role: "customer",
+      phone: "",
+      joinedDate: new Date().toISOString().split("T")[0],
+      customerID: "",
+      password: "",
+      userRole: "customer",
+      status: "active",
     })
   }
 
@@ -153,13 +216,21 @@ const UsersPage = () => {
     )
   }
 
+  const handleEditUser = (user: User) => {
+    setNewUser(user)
+    setIsEditing(true)
+    setShowAddUserModal(true)
+  }
+
   // Filter users based on search term, role, and status
   const filteredUsers = users.filter((user) => {
     const matchesSearch =
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      user.fname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.lname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.userID.toLowerCase().includes(searchTerm.toLowerCase())
 
-    const matchesRole = roleFilter === "all" || user.role === roleFilter
+    const matchesRole = roleFilter === "all" || user.userRole === roleFilter
     const matchesStatus = statusFilter === "all" || user.status === statusFilter
 
     return matchesSearch && matchesRole && matchesStatus
@@ -167,10 +238,10 @@ const UsersPage = () => {
 
   // Get counts for each role
   const roleCounts = {
-    admin: users.filter((user) => user.role === "admin").length,
-    customer: users.filter((user) => user.role === "customer").length,
-    vendor: users.filter((user) => user.role === "vendor").length,
-    shipping: users.filter((user) => user.role === "shipping").length,
+    admin: users.filter((user) => user.userRole === "admin").length,
+    customer: users.filter((user) => user.userRole === "customer").length,
+    vendor: users.filter((user) => user.userRole === "vendor").length,
+    shipping: users.filter((user) => user.userRole === "shipping").length,
   }
 
   return (
@@ -262,12 +333,13 @@ const UsersPage = () => {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50">
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">User ID</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Name</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Email</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Phone</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Role</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Status</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Last Login</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Created</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Joined Date</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Actions</th>
               </tr>
             </thead>
@@ -275,21 +347,23 @@ const UsersPage = () => {
               {filteredUsers.length > 0 ? (
                 filteredUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm font-medium">{user.name}</td>
+                    <td className="px-4 py-3 text-sm font-medium">{user.userID}</td>
+                    <td className="px-4 py-3 text-sm">{`${user.fname} ${user.lname}`}</td>
                     <td className="px-4 py-3 text-sm">{user.email}</td>
+                    <td className="px-4 py-3 text-sm">{user.phone}</td>
                     <td className="px-4 py-3 text-sm">
                       <span
                         className={`px-2 py-1 rounded-full text-xs ${
-                          user.role === "admin"
+                          user.userRole === "admin"
                             ? "bg-purple-100 text-purple-800"
-                            : user.role === "customer"
+                            : user.userRole === "customer"
                               ? "bg-blue-100 text-blue-800"
-                              : user.role === "vendor"
+                              : user.userRole === "vendor"
                                 ? "bg-green-100 text-green-800"
                                 : "bg-orange-100 text-orange-800"
                         }`}
                       >
-                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                        {user.userRole.charAt(0).toUpperCase() + user.userRole.slice(1)}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-sm">
@@ -305,11 +379,14 @@ const UsersPage = () => {
                         {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm">{user.lastLogin}</td>
-                    <td className="px-4 py-3 text-sm">{user.createdAt}</td>
+                    <td className="px-4 py-3 text-sm">{user.joinedDate}</td>
                     <td className="px-4 py-3 text-sm">
                       <div className="flex space-x-2">
-                        <button className="text-blue-600 hover:text-blue-900" title="Edit">
+                        <button
+                          className="text-blue-600 hover:text-blue-900"
+                          title="Edit"
+                          onClick={() => handleEditUser(user)}
+                        >
                           <Edit className="w-5 h-5" />
                         </button>
                         <button
@@ -335,7 +412,7 @@ const UsersPage = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="px-4 py-6 text-center text-gray-500">
+                  <td colSpan={8} className="px-4 py-6 text-center text-gray-500">
                     No users found.{" "}
                     {searchTerm || roleFilter !== "all" || statusFilter !== "all" ? "Try changing your filters." : ""}
                   </td>
@@ -349,70 +426,40 @@ const UsersPage = () => {
       {/* Add User Modal */}
       {showAddUserModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-2xl font-bold mb-6">Add User</h2>
+          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h2 className="text-2xl font-bold mb-6">{isEditing ? "Edit User" : "Add User"}</h2>
 
             <form onSubmit={handleAddUser} className="space-y-4">
-              <div>
-                <label htmlFor="customerType" className="block text-sm font-medium text-gray-700 mb-1">
-                  Customer Type
-                </label>
-                <select
-                  id="customerType"
-                  name="customerType"
-                  value={newUser.customerType}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  required
-                >
-                  <option value="Individual Customer">Individual Customer</option>
-                  <option value="Business Customer">Business Customer</option>
-                </select>
-              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="fname" className="block text-sm font-medium text-gray-700 mb-1">
+                    First Name
+                  </label>
+                  <input
+                    type="text"
+                    id="fname"
+                    name="fname"
+                    value={newUser.fname}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    required
+                  />
+                </div>
 
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={newUser.name}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="dateOfBirth" className="block text-sm font-medium text-gray-700 mb-1">
-                  Date of Birth
-                </label>
-                <input
-                  type="date"
-                  id="dateOfBirth"
-                  name="dateOfBirth"
-                  value={newUser.dateOfBirth}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="contact" className="block text-sm font-medium text-gray-700 mb-1">
-                  Contact
-                </label>
-                <input
-                  type="tel"
-                  id="contact"
-                  name="contact"
-                  value={newUser.contact}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  required
-                />
+                <div>
+                  <label htmlFor="lname" className="block text-sm font-medium text-gray-700 mb-1">
+                    Last Name
+                  </label>
+                  <input
+                    type="text"
+                    id="lname"
+                    name="lname"
+                    value={newUser.lname}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    required
+                  />
+                </div>
               </div>
 
               <div>
@@ -424,6 +471,36 @@ const UsersPage = () => {
                   id="email"
                   name="email"
                   value={newUser.email}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={newUser.phone}
+                  onChange={handleInputChange}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                  required
+                />
+              </div>
+
+              <div>
+                <label htmlFor="dob" className="block text-sm font-medium text-gray-700 mb-1">
+                  Date of Birth
+                </label>
+                <input
+                  type="date"
+                  id="dob"
+                  name="dob"
+                  value={newUser.dob}
                   onChange={handleInputChange}
                   className="w-full p-2 border border-gray-300 rounded-md"
                   required
@@ -446,60 +523,16 @@ const UsersPage = () => {
               </div>
 
               <div>
-                <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
-                  City
-                </label>
-                <input
-                  type="text"
-                  id="city"
-                  name="city"
-                  value={newUser.city}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="district" className="block text-sm font-medium text-gray-700 mb-1">
-                  District
-                </label>
-                <input
-                  type="text"
-                  id="district"
-                  name="district"
-                  value={newUser.district}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-1">
-                  Postal Code
-                </label>
-                <input
-                  type="text"
-                  id="postalCode"
-                  name="postalCode"
-                  value={newUser.postalCode}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  required
-                />
-              </div>
-
-              <div className="hidden">
-                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
-                  Role
+                <label htmlFor="userRole" className="block text-sm font-medium text-gray-700 mb-1">
+                  User Role
                 </label>
                 <select
-                  id="role"
-                  name="role"
-                  value={newUser.role}
+                  id="userRole"
+                  name="userRole"
+                  value={newUser.userRole}
                   onChange={handleInputChange}
                   className="w-full p-2 border border-gray-300 rounded-md"
+                  required
                 >
                   <option value="customer">Customer</option>
                   <option value="admin">Admin</option>
@@ -508,9 +541,33 @@ const UsersPage = () => {
                 </select>
               </div>
 
-              <div className="mt-6 flex justify-center">
-                <button type="submit" className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                  Add Create
+              {!isEditing && (
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    value={newUser.password}
+                    onChange={handleInputChange}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    required={!isEditing}
+                  />
+                </div>
+              )}
+
+              <div className="mt-6 flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setShowAddUserModal(false)}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                  {isEditing ? "Update User" : "Add User"}
                 </button>
               </div>
             </form>

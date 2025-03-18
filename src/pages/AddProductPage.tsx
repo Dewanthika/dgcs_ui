@@ -1,3 +1,5 @@
+"use client"
+
 import type React from "react"
 
 import { useState, useRef } from "react"
@@ -5,16 +7,15 @@ import { useNavigate } from "react-router-dom"
 import { ImagePlus } from "lucide-react"
 
 interface ProductFormData {
-  name: string
-  unitPrice: string
-  category: string
-  productCode: string
-  description: string
+  productName: string
+  price: string
+  categoryID: string
+  productID: string
+  productDescription: string
   images: File[]
-  isNewArrival: boolean
-  isHotProduct: boolean
-  originalPrice?: string
-  discountPercentage?: string
+  weight: string
+  createdAt: string
+  uploadedAt: string
   stock: string
 }
 
@@ -23,16 +24,15 @@ const AddProductPage = () => {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [formData, setFormData] = useState<ProductFormData>({
-    name: "",
-    unitPrice: "",
-    category: "",
-    productCode: "",
-    description: "",
+    productName: "",
+    price: "",
+    categoryID: "",
+    productID: "",
+    productDescription: "",
     images: [],
-    isNewArrival: false,
-    isHotProduct: false,
-    originalPrice: "",
-    discountPercentage: "",
+    weight: "",
+    createdAt: new Date().toISOString().split("T")[0],
+    uploadedAt: new Date().toISOString().split("T")[0],
     stock: "10",
   })
 
@@ -41,11 +41,6 @@ const AddProductPage = () => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target
-    setFormData((prev) => ({ ...prev, [name]: checked }))
   }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,16 +82,15 @@ const AddProductPage = () => {
     // For demo purposes, we'll create a product object and store it in localStorage
     const newProduct = {
       id: Date.now(),
-      title: formData.name,
-      price: Number.parseFloat(formData.unitPrice),
-      originalPrice: formData.isHotProduct ? Number.parseFloat(formData.originalPrice || "0") : undefined,
-      discountPercentage: formData.isHotProduct ? Number.parseInt(formData.discountPercentage || "0") : undefined,
-      category: formData.category,
-      productCode: formData.productCode,
-      description: formData.description,
+      productID: `PROD${Math.floor(1000 + Math.random() * 9000)}`,
+      productName: formData.productName,
+      price: Number.parseFloat(formData.price),
+      categoryID: formData.categoryID,
+      productDescription: formData.productDescription,
       imageUrl: previewUrls.length > 0 ? previewUrls[0] : "/placeholder.svg?height=200&width=200",
-      isNewArrival: formData.isNewArrival,
-      isHotProduct: formData.isHotProduct,
+      weight: Number.parseFloat(formData.weight),
+      createdAt: formData.createdAt,
+      uploadedAt: formData.uploadedAt,
       stock: Number.parseInt(formData.stock),
     }
 
@@ -123,14 +117,14 @@ const AddProductPage = () => {
       <form onSubmit={handleSubmit} className="max-w-3xl">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
-            <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-700">
-              Name
+            <label htmlFor="productName" className="block mb-2 text-sm font-medium text-gray-700">
+              Product Name
             </label>
             <input
               type="text"
-              id="name"
-              name="name"
-              value={formData.name}
+              id="productName"
+              name="productName"
+              value={formData.productName}
               onChange={handleInputChange}
               className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
               required
@@ -138,14 +132,14 @@ const AddProductPage = () => {
           </div>
 
           <div>
-            <label htmlFor="unitPrice" className="block mb-2 text-sm font-medium text-gray-700">
-              Unit Price
+            <label htmlFor="price" className="block mb-2 text-sm font-medium text-gray-700">
+              Price
             </label>
             <input
               type="number"
-              id="unitPrice"
-              name="unitPrice"
-              value={formData.unitPrice}
+              id="price"
+              name="price"
+              value={formData.price}
               onChange={handleInputChange}
               className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
               required
@@ -155,35 +149,35 @@ const AddProductPage = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
-            <label htmlFor="category" className="block mb-2 text-sm font-medium text-gray-700">
+            <label htmlFor="categoryID" className="block mb-2 text-sm font-medium text-gray-700">
               Category
             </label>
             <select
-              id="category"
-              name="category"
-              value={formData.category}
+              id="categoryID"
+              name="categoryID"
+              value={formData.categoryID}
               onChange={handleInputChange}
               className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
               required
             >
               <option value="">Select Category</option>
-              <option value="electronics">Electronics</option>
-              <option value="clothing">Clothing</option>
-              <option value="home">Home & Kitchen</option>
-              <option value="books">Books</option>
-              <option value="toys">Toys</option>
+              <option value="1">Electronics</option>
+              <option value="2">Clothing</option>
+              <option value="3">Home & Kitchen</option>
+              <option value="4">Books</option>
+              <option value="5">Toys</option>
             </select>
           </div>
 
           <div>
-            <label htmlFor="productCode" className="block mb-2 text-sm font-medium text-gray-700">
-              Product Code
+            <label htmlFor="weight" className="block mb-2 text-sm font-medium text-gray-700">
+              Weight (kg)
             </label>
             <input
-              type="text"
-              id="productCode"
-              name="productCode"
-              value={formData.productCode}
+              type="number"
+              id="weight"
+              name="weight"
+              value={formData.weight}
               onChange={handleInputChange}
               className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
               required
@@ -194,7 +188,7 @@ const AddProductPage = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
             <label htmlFor="stock" className="block mb-2 text-sm font-medium text-gray-700">
-              Stock
+              Initial Stock
             </label>
             <input
               type="number"
@@ -207,73 +201,24 @@ const AddProductPage = () => {
             />
           </div>
 
-          <div className="flex items-center space-x-6 pt-7">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="isNewArrival"
-                name="isNewArrival"
-                checked={formData.isNewArrival}
-                onChange={handleCheckboxChange}
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-              />
-              <label htmlFor="isNewArrival" className="ml-2 block text-sm text-gray-700">
-                New Arrival
-              </label>
-            </div>
-
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="isHotProduct"
-                name="isHotProduct"
-                checked={formData.isHotProduct}
-                onChange={handleCheckboxChange}
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-              />
-              <label htmlFor="isHotProduct" className="ml-2 block text-sm text-gray-700">
-                Hot Product
-              </label>
-            </div>
+          <div>
+            <label htmlFor="createdAt" className="block mb-2 text-sm font-medium text-gray-700">
+              Creation Date
+            </label>
+            <input
+              type="date"
+              id="createdAt"
+              name="createdAt"
+              value={formData.createdAt}
+              onChange={handleInputChange}
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              required
+            />
           </div>
         </div>
 
-        {formData.isHotProduct && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-              <label htmlFor="originalPrice" className="block mb-2 text-sm font-medium text-gray-700">
-                Original Price
-              </label>
-              <input
-                type="number"
-                id="originalPrice"
-                name="originalPrice"
-                value={formData.originalPrice}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                required={formData.isHotProduct}
-              />
-            </div>
-
-            <div>
-              <label htmlFor="discountPercentage" className="block mb-2 text-sm font-medium text-gray-700">
-                Discount Percentage
-              </label>
-              <input
-                type="number"
-                id="discountPercentage"
-                name="discountPercentage"
-                value={formData.discountPercentage}
-                onChange={handleInputChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                required={formData.isHotProduct}
-              />
-            </div>
-          </div>
-        )}
-
         <div className="mb-6">
-          <label className="block mb-2 text-sm font-medium text-gray-700">Images</label>
+          <label className="block mb-2 text-sm font-medium text-gray-700">Product Images</label>
           <div
             className="border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50"
             onClick={triggerFileInput}
@@ -317,13 +262,13 @@ const AddProductPage = () => {
         </div>
 
         <div className="mb-6">
-          <label htmlFor="description" className="block mb-2 text-sm font-medium text-gray-700">
+          <label htmlFor="productDescription" className="block mb-2 text-sm font-medium text-gray-700">
             Description
           </label>
           <textarea
-            id="description"
-            name="description"
-            value={formData.description}
+            id="productDescription"
+            name="productDescription"
+            value={formData.productDescription}
             onChange={handleInputChange}
             rows={5}
             className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
