@@ -1,5 +1,3 @@
-"use client"
-
 import { useState } from "react"
 import { LayoutGrid, Package, ShoppingCart, DollarSign, Settings, ChevronDown } from "lucide-react"
 

@@ -1,5 +1,3 @@
-"use client"
-
 import { useEffect, useState } from "react"
 import Hero from "../components/Hero"
 import SearchBar from "../components/SearchBar"

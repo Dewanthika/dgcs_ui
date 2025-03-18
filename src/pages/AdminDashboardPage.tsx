@@ -1,18 +1,5 @@
-"use client"
-
 import { useState } from "react"
-import {
-  LayoutGrid,
-  ShoppingCart,
-  Package,
-  Warehouse,
-  Truck,
-  Building2,
-  User,
-  BarChart3,
-  ChevronDown,
-} from "lucide-react"
-import { Link } from "react-router-dom"
+import { ChevronDown } from "lucide-react"
 
 const AdminDashboardPage = () => {
   const [selectedMonth, setSelectedMonth] = useState("November 2021")
@@ -38,177 +25,114 @@ const AdminDashboardPage = () => {
   ]
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <div className="w-64 bg-white border-r">
-        <div className="p-6">
-          <h1 className="text-xl font-bold">Logo</h1>
+    <>
+      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white border border-orange-200 rounded-lg p-6">
+          <p className="text-gray-700 font-medium">Total Orders</p>
+          <p className="text-xs text-gray-500 mb-2">Last 30 days</p>
+          <p className="text-4xl font-bold">{stats.totalOrders.toLocaleString()}</p>
         </div>
 
-        <nav className="mt-6">
-          <div className="px-4 py-3 bg-indigo-50 flex items-center text-indigo-700 font-medium">
-            <LayoutGrid className="w-5 h-5 mr-3" />
-            Dashboard
+        <div className="bg-white border border-green-200 rounded-lg p-6">
+          <p className="text-gray-700 font-medium">Total Customers</p>
+          <p className="text-xs text-gray-500 mb-2">Last 30 days</p>
+          <p className="text-4xl font-bold">{stats.totalCustomers.toLocaleString()}</p>
+        </div>
+
+        <div className="bg-white border border-indigo-200 rounded-lg p-6">
+          <p className="text-gray-700 font-medium">Total Revenue</p>
+          <p className="text-xs text-gray-500 mb-2">Last 30 days</p>
+          <p className="text-4xl font-bold">LKR {stats.totalRevenue.toLocaleString()}</p>
+        </div>
+
+        <div className="bg-white border border-yellow-200 rounded-lg p-6">
+          <p className="text-gray-700 font-medium">New Customer</p>
+          <p className="text-xs text-gray-500 mb-2">Last 30 days</p>
+          <p className="text-4xl font-bold">{stats.newCustomers}</p>
+        </div>
+      </div>
+
+      {/* Summary Tables */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Order Summary */}
+        <div>
+          <div className="mb-4">
+            <h2 className="text-xl font-bold">Order Summary</h2>
+            <p className="text-sm text-gray-500">Subtitle</p>
           </div>
 
-          <div className="px-4 py-3 flex items-center text-gray-700 hover:bg-gray-100">
-            <ShoppingCart className="w-5 h-5 mr-3" />
-            Orders
-          </div>
-          <Link to="/admin/products">
-          <div className="px-4 py-3 flex items-center text-gray-700 hover:bg-gray-100">
-            <Package className="w-5 h-5 mr-3" />
-            Product
-          </div>
-          </Link>  
-          
-
-          <div className="px-4 py-3 flex items-center text-gray-700 hover:bg-gray-100">
-            <Warehouse className="w-5 h-5 mr-3" />
-            Inventory
-          </div>
-
-          <div className="px-4 py-3 flex items-center text-gray-700 hover:bg-gray-100">
-            <Truck className="w-5 h-5 mr-3" />
-            Shipping
-          </div>
-
-          <div className="px-4 py-3 flex items-center text-gray-700 hover:bg-gray-100">
-            <Building2 className="w-5 h-5 mr-3" />
-            Company
-          </div>
-
-          <div className="px-4 py-3 flex items-center text-gray-700 hover:bg-gray-100">
-            <User className="w-5 h-5 mr-3" />
-            User
-          </div>
-
-          <div className="px-4 py-3 flex items-center text-gray-700 hover:bg-gray-100">
-            <BarChart3 className="w-5 h-5 mr-3" />
-            Report
-          </div>
-        </nav>
-
-        <div className="absolute bottom-0 w-64 border-t p-4">
-          <div className="flex items-center">
-            <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden">
-              <img src="/placeholder.svg?height=40&width=40" alt="Admin" className="w-full h-full object-cover" />
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="p-4 border-b flex justify-end">
+              <div className="relative inline-block">
+                <button className="flex items-center border rounded px-3 py-1.5 text-sm">
+                  {selectedMonth}
+                  <ChevronDown className="ml-2 w-4 h-4" />
+                </button>
+              </div>
             </div>
-            <div className="ml-3">
-              <p className="font-medium">Admin</p>
+
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Order ID</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Customer</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Type</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {orders.map((order, index) => (
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm">{order.id}</td>
+                      <td className="px-4 py-3 text-sm">{order.customer}</td>
+                      <td className="px-4 py-3 text-sm">{order.type}</td>
+                      <td className="px-4 py-3 text-sm">{order.status}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Inventory Summary */}
+        <div>
+          <div className="mb-4">
+            <h2 className="text-xl font-bold">Inventory Summary</h2>
+            <p className="text-sm text-gray-500">Subtitle</p>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Product ID</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Name</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Unit Price</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Stock</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {inventory.map((item, index) => (
+                    <tr key={index} className={`hover:bg-gray-50 ${item.stock < 5 ? "bg-red-200" : ""}`}>
+                      <td className="px-4 py-3 text-sm">{item.id}</td>
+                      <td className="px-4 py-3 text-sm">{item.name}</td>
+                      <td className="px-4 py-3 text-sm">lkr {item.price}</td>
+                      <td className="px-4 py-3 text-sm">{item.stock}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Main Content */}
-      <div className="flex-1 p-8">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white border border-orange-200 rounded-lg p-6">
-            <p className="text-gray-700 font-medium">Total Orders</p>
-            <p className="text-xs text-gray-500 mb-2">Last 30 days</p>
-            <p className="text-4xl font-bold">{stats.totalOrders.toLocaleString()}</p>
-          </div>
-
-          <div className="bg-white border border-green-200 rounded-lg p-6">
-            <p className="text-gray-700 font-medium">Total Customers</p>
-            <p className="text-xs text-gray-500 mb-2">Last 30 days</p>
-            <p className="text-4xl font-bold">{stats.totalCustomers.toLocaleString()}</p>
-          </div>
-
-          <div className="bg-white border border-indigo-200 rounded-lg p-6">
-            <p className="text-gray-700 font-medium">Total Revenue</p>
-            <p className="text-xs text-gray-500 mb-2">Last 30 days</p>
-            <p className="text-4xl font-bold">LKR {stats.totalRevenue.toLocaleString()}</p>
-          </div>
-
-          <div className="bg-white border border-yellow-200 rounded-lg p-6">
-            <p className="text-gray-700 font-medium">New Customer</p>
-            <p className="text-xs text-gray-500 mb-2">Last 30 days</p>
-            <p className="text-4xl font-bold">{stats.newCustomers}</p>
-          </div>
-        </div>
-
-        {/* Summary Tables */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Order Summary */}
-          <div>
-            <div className="mb-4">
-              <h2 className="text-xl font-bold">Order Summary</h2>
-              <p className="text-sm text-gray-500">Subtitle</p>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-              <div className="p-4 border-b flex justify-end">
-                <div className="relative inline-block">
-                  <button className="flex items-center border rounded px-3 py-1.5 text-sm">
-                    {selectedMonth}
-                    <ChevronDown className="ml-2 w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-gray-50">
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Order ID</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Customer</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Type</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {orders.map((order, index) => (
-                      <tr key={index} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 text-sm">{order.id}</td>
-                        <td className="px-4 py-3 text-sm">{order.customer}</td>
-                        <td className="px-4 py-3 text-sm">{order.type}</td>
-                        <td className="px-4 py-3 text-sm">{order.status}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          {/* Inventory Summary */}
-          <div>
-            <div className="mb-4">
-              <h2 className="text-xl font-bold">Inventory Summary</h2>
-              <p className="text-sm text-gray-500">Subtitle</p>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="bg-gray-50">
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Product ID</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Name</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Unit Price</th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Stock</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {inventory.map((item, index) => (
-                      <tr key={index} className={`hover:bg-gray-50 ${item.stock < 5 ? "bg-red-200" : ""}`}>
-                        <td className="px-4 py-3 text-sm">{item.id}</td>
-                        <td className="px-4 py-3 text-sm">{item.name}</td>
-                        <td className="px-4 py-3 text-sm">lkr {item.price}</td>
-                        <td className="px-4 py-3 text-sm">{item.stock}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    </>
   )
 }
 
