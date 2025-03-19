@@ -7,7 +7,7 @@ const Header = () => {
   const userType = "admin" // Options: 'admin', 'customer', 'vendor', 'shipping'
 
   return (
-    <header className="bg-white shadow-sm py-4">
+    <header className="bg-white shadow-sm py-4 w-full m-auto">
       <div className="container flex justify-between items-center">
         <Link to="/" className="text-2xl font-bold">
           LOGO

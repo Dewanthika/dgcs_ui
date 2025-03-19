@@ -1,5 +1,3 @@
-"use client"
-
 import type React from "react"
 
 import { useState, useRef } from "react"
@@ -113,11 +111,11 @@ const ProductForm = ({ initialData, onSubmit, onCancel }: ProductFormProps) => {
             required
           >
             <option value="">Select Category</option>
-            <option value="1">Electronics</option>
-            <option value="2">Clothing</option>
-            <option value="3">Home & Kitchen</option>
-            <option value="4">Books</option>
-            <option value="5">Toys</option>
+            <option value="1">Gloves</option>
+            <option value="2">Helment</option>
+            <option value="3">Gum Boot</option>
+            <option value="4">Earmuff</option>
+            <option value="5">Safety Spectacles</option>
           </select>
         </FormField>
 

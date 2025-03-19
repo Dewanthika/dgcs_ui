@@ -1,54 +1,68 @@
-import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
-import { Plus, Edit, Trash2 } from "lucide-react"
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { Plus, Edit, Trash2 } from "lucide-react";
 
 interface Product {
-  id: number
-  title: string
-  price: number
-  originalPrice?: number
-  discountPercentage?: number
-  category: string
-  productCode: string
-  description: string
-  imageUrl: string
-  isNewArrival: boolean
-  isHotProduct: boolean
-  stock: number
+  id: number;
+  productID: string;
+  productName: string;
+  price: number;
+  originalPrice?: number;
+  discountPercentage?: number;
+  categoryID: string; 
+  productDescription: string; 
+  imageUrl: string;
+  weight: number;
+  createdAt: string;
+  uploadedAt: string;
+  isNewArrival?: boolean;
+  isHotProduct?: boolean;
+  stock: number;
 }
 
+
 const ProductsListPage = () => {
-  const [products, setProducts] = useState<Product[]>([])
-  const [selectedCategory, setSelectedCategory] = useState<string>("all")
-  const [searchTerm, setSearchTerm] = useState<string>("")
+  const existingProducts = JSON.parse(localStorage.getItem("products") || "[]");
+  const [products, setProducts] = useState<Product[]>(existingProducts);
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState<string>("");
+
+  console.log({existingProducts})
 
   useEffect(() => {
     // Load products from localStorage
-    const storedProducts = localStorage.getItem("products")
+    const storedProducts = localStorage.getItem("products");
     if (storedProducts) {
-      setProducts(JSON.parse(storedProducts))
+      setProducts(JSON.parse(storedProducts));
     }
-  }, [])
+  }, []);
 
   const handleDeleteProduct = (id: number) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
-      const updatedProducts = products.filter((product) => product.id !== id)
-      setProducts(updatedProducts)
-      localStorage.setItem("products", JSON.stringify(updatedProducts))
+      const updatedProducts = products.filter((product) => product.id !== id);
+      setProducts(updatedProducts);
+      localStorage.setItem("products", JSON.stringify(updatedProducts));
     }
-  }
+  };
 
   // Filter products based on category and search term
   const filteredProducts = products.filter((product) => {
-    const matchesCategory = selectedCategory === "all" || product.category === selectedCategory
+    const matchesCategory =
+      selectedCategory === "all" || product?.categoryID === selectedCategory;
+  
     const matchesSearch =
-      product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.productCode.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesCategory && matchesSearch
-  })
+      product?.productName?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
+      product?.productID?.toLowerCase()?.includes(searchTerm?.toLowerCase());
+  
+    return matchesCategory && matchesSearch;
+  });
+  
 
   // Get unique categories from products
-  const categories = ["all", ...new Set(products.map((product) => product.category))]
+  const categories = [
+    "all",
+    ...new Set(products.map((product) => product.categoryID)),
+  ];
 
   return (
     <>
@@ -83,7 +97,9 @@ const ProductsListPage = () => {
             >
               {categories.map((category) => (
                 <option key={category} value={category}>
-                  {category === "all" ? "All Categories" : category.charAt(0).toUpperCase() + category.slice(1)}
+                  {category === "all"
+                    ? "All Categories"
+                    : category?.charAt(0)?.toUpperCase() + category?.slice(1)}
                 </option>
               ))}
             </select>
@@ -94,13 +110,27 @@ const ProductsListPage = () => {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50">
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Image</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Name</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Price</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Category</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Stock</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Type</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Actions</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
+                  Image
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
+                  Name
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
+                  Price
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
+                  Category
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
+                  Stock
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
+                  Type
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -111,31 +141,35 @@ const ProductsListPage = () => {
                       <div className="w-12 h-12 bg-gray-200 flex items-center justify-center overflow-hidden rounded">
                         <img
                           src={product.imageUrl || "/placeholder.svg"}
-                          alt={product.title}
+                          alt={product.productName}
                           className="w-full h-full object-cover"
                         />
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm font-medium">{product.title}</td>
+                    <td className="px-4 py-3 text-sm font-medium">
+                      {product.productName}
+                    </td>
                     <td className="px-4 py-3 text-sm">
                       {product.originalPrice ? (
                         <div>
                           <div>LKR {product.price}</div>
-                          <div className="text-xs text-gray-500 line-through">Was LKR {product.originalPrice}</div>
+                          <div className="text-xs text-gray-500 line-through">
+                            Was LKR {product.originalPrice}
+                          </div>
                         </div>
                       ) : (
                         <div>LKR {product.price}</div>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm">{product.category}</td>
+                    <td className="px-4 py-3 text-sm">{product.categoryID}</td>
                     <td className="px-4 py-3 text-sm">
                       <span
                         className={`px-2 py-1 rounded-full text-xs ${
                           product.stock > 10
                             ? "bg-green-100 text-green-800"
                             : product.stock > 5
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-red-100 text-red-800"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-red-100 text-red-800"
                         }`}
                       >
                         {product.stock}
@@ -148,12 +182,17 @@ const ProductsListPage = () => {
                         </span>
                       )}
                       {product.isHotProduct && (
-                        <span className="px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-800">Hot</span>
+                        <span className="px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-800">
+                          Hot
+                        </span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-sm">
                       <div className="flex space-x-2">
-                        <button className="text-blue-600 hover:text-blue-900" title="Edit">
+                        <button
+                          className="text-blue-600 hover:text-blue-900"
+                          title="Edit"
+                        >
                           <Edit className="w-5 h-5" />
                         </button>
                         <button
@@ -169,7 +208,10 @@ const ProductsListPage = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="px-4 py-6 text-center text-gray-500">
+                  <td
+                    colSpan={7}
+                    className="px-4 py-6 text-center text-gray-500"
+                  >
                     No products found.{" "}
                     {searchTerm || selectedCategory !== "all"
                       ? "Try changing your filters."
@@ -182,8 +224,7 @@ const ProductsListPage = () => {
         </div>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default ProductsListPage
-
+export default ProductsListPage;

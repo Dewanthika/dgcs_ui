@@ -1,20 +1,30 @@
-import type React from "react"
-
-import { useState } from "react"
-import { Link } from "react-router-dom"
+import { Link } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
+import { SubmitHandler, useForm } from "react-hook-form";
+import ISigninInputs from "../types/ISigninInputs";
 
 const LoginPage = () => {
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
+  const { signin, isLoading, errorMessage, setErrorMessage } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Login attempt with:", { username, password })
-    // Implement login functionality
-  }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ISigninInputs>();
+
+  const onSubmit: SubmitHandler<ISigninInputs> = async (data) => {
+    const { email, password } = data;
+    await signin({ email, password });
+  };
+
+  const onInputChange = () => {
+    if (errorMessage) {
+      setErrorMessage("");
+    }
+  };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen w-full">
       {/* Left side - Login form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
@@ -22,20 +32,25 @@ const LoginPage = () => {
             <h1 className="text-4xl font-bold">Logo</h1>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          {isLoading && <h5>Loading</h5>}
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-2">
               <label htmlFor="username" className="block text-sm text-gray-600">
                 User Name
               </label>
               <input
                 type="text"
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                id="email"
                 className="w-full border-b border-gray-300 py-2 focus:outline-none focus:border-black"
                 placeholder="Name"
                 required
+                {...register("email", {
+                  required: "email is required",
+                  onChange: onInputChange,
+                })}
               />
+              <span className="text-red">{errors.email?.message}</span>
             </div>
 
             <div className="space-y-2">
@@ -45,27 +60,39 @@ const LoginPage = () => {
               <input
                 type="password"
                 id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
                 className="w-full border-b border-gray-300 py-2 focus:outline-none focus:border-black"
                 placeholder="Password"
                 required
+                {...register("password", {
+                  required: "Password is required",
+                  onChange: onInputChange,
+                })}
               />
+              <span className="text-red">{errors.password?.message}</span>
             </div>
 
             <div className="pt-4">
-              <button type="submit" className="w-full bg-black text-white py-3 font-medium uppercase">
+              <button
+                type="submit"
+                className="w-full bg-black text-white py-3 font-medium uppercase"
+              >
                 LOG IN
               </button>
             </div>
 
             <div className="text-center space-y-2">
-              <Link to="/forgot-password" className="text-gray-500 text-sm hover:underline block">
+              <Link
+                to="/forgot-password"
+                className="text-gray-500 text-sm hover:underline block"
+              >
                 Forgot Password
               </Link>
               <p className="text-sm text-gray-600">
                 Don't have an account?{" "}
-                <Link to="/register" className="text-black font-medium hover:underline">
+                <Link
+                  to="/register"
+                  className="text-black font-medium hover:underline"
+                >
                   Register
                 </Link>
               </p>
@@ -77,12 +104,15 @@ const LoginPage = () => {
       {/* Right side - Image */}
       <div className="hidden lg:block lg:w-1/2 bg-gray-300">
         <div className="h-full flex items-center justify-center">
-          <img src="/placeholder.svg?height=400&width=400" alt="Login" className="max-w-md" />
+          <img
+            src="/placeholder.svg?height=400&width=400"
+            alt="Login"
+            className="max-w-md"
+          />
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default LoginPage
-
+export default LoginPage;

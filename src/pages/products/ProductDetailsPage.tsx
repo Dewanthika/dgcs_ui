@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import { useParams } from "react-router-dom"
 import { Star, Minus, Plus } from "lucide-react"
-import { getProductById } from "../services/productService"
+import { getProductById } from "../../services/productService"
 
 interface Product {
   id: number
@@ -13,6 +13,7 @@ interface Product {
   description: string
   imageUrl: string
   stock: number
+  rating: number
 }
 
 const ProductDetailPage = () => {
@@ -120,8 +121,8 @@ const ProductDetailPage = () => {
           )}
 
           <div className="flex items-center gap-2">
-            <span className="font-medium">{(product as any).rating || 4.0}</span>
-            <div className="flex">{renderStars((product as any).rating || 4.0)}</div>
+            <span className="font-medium">{(product).rating || 4.0}</span>
+            <div className="flex">{renderStars((product).rating || 4.0)}</div>
           </div>
 
           <div className="space-y-2 border-t pt-6">

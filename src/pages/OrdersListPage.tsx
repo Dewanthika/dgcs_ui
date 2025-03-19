@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { Plus, Eye, Edit, Trash2 } from "lucide-react"

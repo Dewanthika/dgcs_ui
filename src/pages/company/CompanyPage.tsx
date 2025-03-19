@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import type { Company } from "../../types"
 import { Plus } from "lucide-react"
@@ -132,6 +130,7 @@ const CompanyPage = () => {
       {/* Companies List */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
         <DataTable
+        // @ts-expect-error @ts-ignore
           columns={columns}
           data={filteredCompanies}
           keyExtractor={(company) => company.id}
