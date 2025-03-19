@@ -2,24 +2,11 @@
 
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { Plus, Edit, AlertTriangle, ArrowUpDown } from "lucide-react"
-
-interface Inventory {
-  id: number
-  inventoryID: string
-  productID: number
-  productName: string
-  totalQty: number
-  usedTime: string
-  damageQty: number
-  updatedAt: string
-  reorderQty: number
-  minThreshold: number
-  maxThreshold: number
-  category: string
-  price: number
-  imageUrl: string
-}
+import { Plus, Edit, AlertTriangle } from "lucide-react"
+import type { Inventory } from "../../types"
+import PageHeader from "../../components/ui/PageHeader"
+import SearchBar from "../../components/ui/SearchBar"
+import DataTable from "../../components/tables/DataTable"
 
 const InventoryPage = () => {
   const [inventory, setInventory] = useState<Inventory[]>([])
@@ -191,30 +178,107 @@ const InventoryPage = () => {
     setInventory(updatedInventory)
   }
 
+  const columns = [
+    {
+      header: "Image",
+      accessor: (item: Inventory) => (
+        <div className="w-12 h-12 bg-gray-200 flex items-center justify-center overflow-hidden rounded">
+          <img
+            src={item.imageUrl || "/placeholder.svg"}
+            alt={item.productName}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      ),
+    },
+    {
+      header: "Product",
+      accessor: "productName",
+      sortable: true,
+      sortKey: "productName",
+    },
+    { header: "Inventory ID", accessor: "inventoryID" },
+    { header: "Category", accessor: "category" },
+    { header: "Price", accessor: (item: Inventory) => `LKR ${item.price}` },
+    {
+      header: "Total Qty",
+      accessor: (item: Inventory) => (
+        <div className="flex items-center">
+          <span
+            className={`mr-2 ${
+              item.totalQty === 0
+                ? "text-red-600 font-bold"
+                : item.totalQty <= item.minThreshold
+                  ? "text-yellow-600 font-bold"
+                  : ""
+            }`}
+          >
+            {item.totalQty}
+          </span>
+          {item.totalQty <= item.minThreshold && <AlertTriangle className="h-4 w-4 text-yellow-500" />}
+        </div>
+      ),
+      sortable: true,
+      sortKey: "totalQty",
+    },
+    { header: "Damage Qty", accessor: "damageQty" },
+    { header: "Min/Max", accessor: (item: Inventory) => `${item.minThreshold}/${item.maxThreshold}` },
+    {
+      header: "Updated At",
+      accessor: "updatedAt",
+      sortable: true,
+      sortKey: "updatedAt",
+    },
+    {
+      header: "Actions",
+      accessor: (item: Inventory) => (
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => updateStock(item.id, item.totalQty - 1)}
+            className="px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
+            disabled={item.totalQty <= 0}
+          >
+            -
+          </button>
+          <button
+            onClick={() => updateStock(item.id, item.totalQty + 1)}
+            className="px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
+          >
+            +
+          </button>
+          <Link
+            to={`/admin/products/edit/${item.productID}`}
+            className="px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+          >
+            <Edit className="h-4 w-4" />
+          </Link>
+        </div>
+      ),
+    },
+  ]
+
   return (
     <>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Inventory Management</h1>
-        <Link
-          to="/admin/products/add"
-          className="bg-indigo-600 text-white py-2 px-4 rounded-md flex items-center hover:bg-indigo-700"
-        >
-          <Plus className="w-5 h-5 mr-1" />
-          Add Product
-        </Link>
-      </div>
+      <PageHeader
+        title="Inventory Management"
+        action={
+          <Link
+            to="/admin/products/add"
+            className="bg-indigo-600 text-white py-2 px-4 rounded-md flex items-center hover:bg-indigo-700"
+          >
+            <Plus className="w-5 h-5 mr-1" />
+            Add Product
+          </Link>
+        }
+      />
 
       <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
         <div className="p-4 border-b flex flex-col sm:flex-row justify-between gap-4">
-          <div className="flex-1">
-            <input
-              type="text"
-              placeholder="Search products by name or inventory ID..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md"
-            />
-          </div>
+          <SearchBar
+            value={searchTerm}
+            onChange={setSearchTerm}
+            placeholder="Search products by name or inventory ID..."
+          />
 
           <div>
             <select
@@ -230,116 +294,19 @@ const InventoryPage = () => {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Image</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
-                  <button className="flex items-center" onClick={() => handleSort("productName")}>
-                    Product
-                    <ArrowUpDown className="ml-1 h-4 w-4" />
-                  </button>
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Inventory ID</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Category</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Price</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
-                  <button className="flex items-center" onClick={() => handleSort("totalQty")}>
-                    Total Qty
-                    <ArrowUpDown className="ml-1 h-4 w-4" />
-                  </button>
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Damage Qty</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Min/Max</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
-                  <button className="flex items-center" onClick={() => handleSort("updatedAt")}>
-                    Updated At
-                    <ArrowUpDown className="ml-1 h-4 w-4" />
-                  </button>
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {filteredInventory.length > 0 ? (
-                filteredInventory.map((item) => (
-                  <tr
-                    key={item.id}
-                    className={`hover:bg-gray-50 ${
-                      item.totalQty === 0 ? "bg-red-50" : item.totalQty <= item.minThreshold ? "bg-yellow-50" : ""
-                    }`}
-                  >
-                    <td className="px-4 py-3">
-                      <div className="w-12 h-12 bg-gray-200 flex items-center justify-center overflow-hidden rounded">
-                        <img
-                          src={item.imageUrl || "/placeholder.svg"}
-                          alt={item.productName}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm font-medium">{item.productName}</td>
-                    <td className="px-4 py-3 text-sm">{item.inventoryID}</td>
-                    <td className="px-4 py-3 text-sm">{item.category}</td>
-                    <td className="px-4 py-3 text-sm">LKR {item.price}</td>
-                    <td className="px-4 py-3 text-sm">
-                      <div className="flex items-center">
-                        <span
-                          className={`mr-2 ${
-                            item.totalQty === 0
-                              ? "text-red-600 font-bold"
-                              : item.totalQty <= item.minThreshold
-                                ? "text-yellow-600 font-bold"
-                                : ""
-                          }`}
-                        >
-                          {item.totalQty}
-                        </span>
-                        {item.totalQty <= item.minThreshold && <AlertTriangle className="h-4 w-4 text-yellow-500" />}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm">{item.damageQty}</td>
-                    <td className="px-4 py-3 text-sm">
-                      {item.minThreshold}/{item.maxThreshold}
-                    </td>
-                    <td className="px-4 py-3 text-sm">{item.updatedAt}</td>
-                    <td className="px-4 py-3 text-sm">
-                      <div className="flex items-center space-x-2">
-                        <button
-                          onClick={() => updateStock(item.id, item.totalQty - 1)}
-                          className="px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200"
-                          disabled={item.totalQty <= 0}
-                        >
-                          -
-                        </button>
-                        <button
-                          onClick={() => updateStock(item.id, item.totalQty + 1)}
-                          className="px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200"
-                        >
-                          +
-                        </button>
-                        <Link
-                          to={`/admin/products/edit/${item.productID}`}
-                          className="px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Link>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={10} className="px-4 py-6 text-center text-gray-500">
-                    No products found.{" "}
-                    {searchTerm ? "Try changing your search term." : "Add some products to get started."}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+        <DataTable
+          columns={columns}
+          data={filteredInventory}
+          keyExtractor={(item) => item.id}
+          onSort={handleSort}
+          sortField={sortField}
+          sortDirection={sortDirection}
+          emptyMessage={
+            searchTerm
+              ? "No products found. Try changing your search term."
+              : "No products found. Add some products to get started."
+          }
+        />
       </div>
 
       {/* Inventory Summary */}

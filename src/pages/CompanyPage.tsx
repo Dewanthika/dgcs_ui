@@ -7,16 +7,13 @@ import { Plus, Edit, Trash2, Search } from "lucide-react"
 
 interface Company {
   id: number
-  name: string
-  contact: string
-  email: string
-  address: string
-  city: string
-  district: string
-  postalCode: string
-  businessRegistrationNumber: string
-  creditLimit: string
+  companyID: string
+  cmpName: string
+  cmpPhone: string
+  cmpAddress: string
+  billRefNo: string
   paymentTerms: string
+  creditLimit: string
 }
 
 const CompanyPage = () => {
@@ -25,16 +22,13 @@ const CompanyPage = () => {
   const [showAddCompanyModal, setShowAddCompanyModal] = useState(false)
   const [newCompany, setNewCompany] = useState<Company>({
     id: 0,
-    name: "",
-    contact: "",
-    email: "",
-    address: "",
-    city: "",
-    district: "",
-    postalCode: "",
-    businessRegistrationNumber: "",
-    creditLimit: "",
+    companyID: "",
+    cmpName: "",
+    cmpPhone: "",
+    cmpAddress: "",
+    billRefNo: "",
     paymentTerms: "Net 30 Days",
+    creditLimit: "",
   })
   const [isEditing, setIsEditing] = useState(false)
 
@@ -43,29 +37,23 @@ const CompanyPage = () => {
     const mockCompanies: Company[] = [
       {
         id: 1,
-        name: "Acme Corporation",
-        contact: "+94 123 456 789",
-        email: "info@acme.com",
-        address: "123 Main Street",
-        city: "Colombo",
-        district: "Western Province",
-        postalCode: "10100",
-        businessRegistrationNumber: "REG123456789",
-        creditLimit: "100000",
+        companyID: "COMP001",
+        cmpName: "Acme Corporation",
+        cmpPhone: "+94 123 456 789",
+        cmpAddress: "123 Main Street, Colombo, Western Province, 10100",
+        billRefNo: "BILL001",
         paymentTerms: "Net 30 Days",
+        creditLimit: "100000",
       },
       {
         id: 2,
-        name: "Global Enterprises",
-        contact: "+94 987 654 321",
-        email: "contact@globalent.com",
-        address: "456 Business Avenue",
-        city: "Kandy",
-        district: "Central Province",
-        postalCode: "20000",
-        businessRegistrationNumber: "REG987654321",
-        creditLimit: "75000",
+        companyID: "COMP002",
+        cmpName: "Global Enterprises",
+        cmpPhone: "+94 987 654 321",
+        cmpAddress: "456 Business Avenue, Kandy, Central Province, 20000",
+        billRefNo: "BILL002",
         paymentTerms: "Net 15 Days",
+        creditLimit: "75000",
       },
     ]
 
@@ -92,6 +80,7 @@ const CompanyPage = () => {
       const companyToAdd = {
         ...newCompany,
         id: Date.now(),
+        companyID: `COMP${Math.floor(1000 + Math.random() * 9000)}`,
       }
       setCompanies([...companies, companyToAdd])
     }
@@ -99,16 +88,13 @@ const CompanyPage = () => {
     // Reset form and close modal
     setNewCompany({
       id: 0,
-      name: "",
-      contact: "",
-      email: "",
-      address: "",
-      city: "",
-      district: "",
-      postalCode: "",
-      businessRegistrationNumber: "",
-      creditLimit: "",
+      companyID: "",
+      cmpName: "",
+      cmpPhone: "",
+      cmpAddress: "",
+      billRefNo: "",
       paymentTerms: "Net 30 Days",
+      creditLimit: "",
     })
     setShowAddCompanyModal(false)
   }
@@ -128,9 +114,9 @@ const CompanyPage = () => {
   // Filter companies based on search term
   const filteredCompanies = companies.filter(
     (company) =>
-      company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      company.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      company.businessRegistrationNumber.toLowerCase().includes(searchTerm.toLowerCase()),
+      company.cmpName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.companyID.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.billRefNo.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
   return (
@@ -142,16 +128,13 @@ const CompanyPage = () => {
             setIsEditing(false)
             setNewCompany({
               id: 0,
-              name: "",
-              contact: "",
-              email: "",
-              address: "",
-              city: "",
-              district: "",
-              postalCode: "",
-              businessRegistrationNumber: "",
-              creditLimit: "",
+              companyID: "",
+              cmpName: "",
+              cmpPhone: "",
+              cmpAddress: "",
+              billRefNo: "",
               paymentTerms: "Net 30 Days",
+              creditLimit: "",
             })
             setShowAddCompanyModal(true)
           }}
@@ -184,11 +167,11 @@ const CompanyPage = () => {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50">
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Company ID</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Company Name</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Contact</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Email</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">City</th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Registration No.</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Phone</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Bill Ref No</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Payment Terms</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Credit Limit</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Actions</th>
               </tr>
@@ -197,11 +180,11 @@ const CompanyPage = () => {
               {filteredCompanies.length > 0 ? (
                 filteredCompanies.map((company) => (
                   <tr key={company.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm font-medium">{company.name}</td>
-                    <td className="px-4 py-3 text-sm">{company.contact}</td>
-                    <td className="px-4 py-3 text-sm">{company.email}</td>
-                    <td className="px-4 py-3 text-sm">{company.city}</td>
-                    <td className="px-4 py-3 text-sm">{company.businessRegistrationNumber}</td>
+                    <td className="px-4 py-3 text-sm font-medium">{company.companyID}</td>
+                    <td className="px-4 py-3 text-sm">{company.cmpName}</td>
+                    <td className="px-4 py-3 text-sm">{company.cmpPhone}</td>
+                    <td className="px-4 py-3 text-sm">{company.billRefNo}</td>
+                    <td className="px-4 py-3 text-sm">{company.paymentTerms}</td>
                     <td className="px-4 py-3 text-sm">LKR {company.creditLimit}</td>
                     <td className="px-4 py-3 text-sm">
                       <div className="flex space-x-2">
@@ -244,14 +227,14 @@ const CompanyPage = () => {
 
             <form onSubmit={handleAddCompany} className="space-y-4">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="cmpName" className="block text-sm font-medium text-gray-700 mb-1">
                   Company name
                 </label>
                 <input
                   type="text"
-                  id="name"
-                  name="name"
-                  value={newCompany.name}
+                  id="cmpName"
+                  name="cmpName"
+                  value={newCompany.cmpName}
                   onChange={handleInputChange}
                   className="w-full p-2 border border-gray-300 rounded-md"
                   required
@@ -259,14 +242,14 @@ const CompanyPage = () => {
               </div>
 
               <div>
-                <label htmlFor="contact" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="cmpPhone" className="block text-sm font-medium text-gray-700 mb-1">
                   Contact
                 </label>
                 <input
                   type="tel"
-                  id="contact"
-                  name="contact"
-                  value={newCompany.contact}
+                  id="cmpPhone"
+                  name="cmpPhone"
+                  value={newCompany.cmpPhone}
                   onChange={handleInputChange}
                   className="w-full p-2 border border-gray-300 rounded-md"
                   required
@@ -274,28 +257,14 @@ const CompanyPage = () => {
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email (Optional)
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={newCompany.email}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="cmpAddress" className="block text-sm font-medium text-gray-700 mb-1">
                   Address
                 </label>
                 <input
                   type="text"
-                  id="address"
-                  name="address"
-                  value={newCompany.address}
+                  id="cmpAddress"
+                  name="cmpAddress"
+                  value={newCompany.cmpAddress}
                   onChange={handleInputChange}
                   className="w-full p-2 border border-gray-300 rounded-md"
                   required
@@ -303,59 +272,14 @@ const CompanyPage = () => {
               </div>
 
               <div>
-                <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
-                  City
-                </label>
-                <input
-                  type="text"
-                  id="city"
-                  name="city"
-                  value={newCompany.city}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="district" className="block text-sm font-medium text-gray-700 mb-1">
-                  District
-                </label>
-                <input
-                  type="text"
-                  id="district"
-                  name="district"
-                  value={newCompany.district}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-1">
-                  Postal Code
-                </label>
-                <input
-                  type="text"
-                  id="postalCode"
-                  name="postalCode"
-                  value={newCompany.postalCode}
-                  onChange={handleInputChange}
-                  className="w-full p-2 border border-gray-300 rounded-md"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="businessRegistrationNumber" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="billRefNo" className="block text-sm font-medium text-gray-700 mb-1">
                   Business Registration Number
                 </label>
                 <input
                   type="text"
-                  id="businessRegistrationNumber"
-                  name="businessRegistrationNumber"
-                  value={newCompany.businessRegistrationNumber}
+                  id="billRefNo"
+                  name="billRefNo"
+                  value={newCompany.billRefNo}
                   onChange={handleInputChange}
                   className="w-full p-2 border border-gray-300 rounded-md"
                   required

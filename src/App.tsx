@@ -1,39 +1,47 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
-import Header from "./components/Header"
-import Footer from "./components/Footer"
+import Header from "./components/layout/Header"
+import Footer from "./components/layout/Footer"
 import HomePage from "./pages/HomePage"
 import ShopPage from "./pages/ShopPage"
+
+
+import AdminLayout from "./layouts/AdminLayout"
+
+
+import OrdersListPage from "./pages/orders/OrdersListPage"
+
+import InventoryPage from "./pages/inventory/InventoryPage"
+
+import CompanyPage from "./pages/company/CompanyPage"
+import UsersPage from "./pages/users/UsersPage"
 import LoginPage from "./pages/LoginPage"
 import RegisterPage from "./pages/RegisterPage"
-import CartPage from "./pages/CartPage"
-import CheckoutPage from "./pages/CheckoutPage"
-import OrderSummaryPage from "./pages/OrderSummaryPage"
-import ProductDetailPage from "./pages/ProductDetailsPage"
 import ForgotPasswordPage from "./pages/ForgotPasswordPage"
-import MyAccountPage from "./pages/MyAccountPage"
-import PaymentSuccessPage from "./pages/PaymentSuccessPage"
 import AdminDashboardPage from "./pages/AdminDashboardPage"
+import ProductsListPage from "./pages/ProductsListPage"
+import AddProductPage from "./pages/AddProductPage"
+import CreateOrderPage from "./pages/CreateOrderPage"
+import EditOrderPage from "./pages/EditOrderPage"
+import ViewOrderPage from "./pages/ViewOrderPage"
+import ShippingPage from "./pages/ShippingPage"
+import ReportsPage from "./pages/ReportsPage"
 import CustomerDashboardPage from "./pages/CustomerDashboardPage"
 import VendorDashboardPage from "./pages/VendorDashboardPage"
 import ShippingDashboardPage from "./pages/ShippingDashboardPage"
-import AddProductPage from "./pages/AddProductPage"
-import ProductsListPage from "./pages/ProductsListPage"
-import CreateOrderPage from "./pages/CreateOrderPage"
-import EditOrderPage from "./pages/EditOrderPage"
-import OrdersListPage from "./pages/OrdersListPage"
-import ViewOrderPage from "./pages/ViewOrderPage"
+import CartPage from "./pages/CartPage"
+import CheckoutPage from "./pages/CheckoutPage"
+import PaymentSuccessPage from "./pages/PaymentSuccessPage"
+import OrderSummaryPage from "./pages/OrderSummaryPage"
 import CustomerOrderViewPage from "./pages/CustomerOrderViewPage"
-import AdminLayout from "./layouts/AdminLayout"
-import InventoryPage from "./pages/InventoryPage"
-import ShippingPage from "./pages/ShippingPage"
-import CompanyPage from "./pages/CompanyPage"
-import UsersPage from "./pages/UsersPage"
-import ReportsPage from "./pages/ReportsPage"
+import MyAccountPage from "./pages/MyAccountPage"
+import ProductDetailPage from "./pages/ProductDetailsPage"
+
 
 function App() {
+  // In a real app, you would determine user type from authentication
+  const userType = "admin" // Options: 'admin', 'customer', 'vendor', 'shipping'
 
-  const userType = "admin";
-
+  // Function to redirect to the appropriate dashboard based on user type
   const getDashboardRedirect = () => {
     switch (userType) {
       case "admin":

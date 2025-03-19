@@ -1,11 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import "tailwindcss";
 
 @layer base {
   body {
-    @apply font-sans text-gray-800 ;
+    @apply font-sans text-gray-800 bg-light;
   }
 }
 
@@ -15,7 +14,7 @@
   }
 
   .btn-primary {
-    @apply  text-white ;
+    @apply bg-primary text-white hover:bg-secondary;
   }
 
   .btn-secondary {
@@ -24,6 +23,23 @@
 
   .container {
     @apply mx-auto px-4 max-w-7xl;
+  }
+
+  /* Half-filled star effect */
+  .half-filled {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .half-filled::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    right: 0;
+    bottom: 0;
+    background-color: white;
+    z-index: 1;
   }
 }
 
