@@ -176,8 +176,8 @@ const OrdersListPage = () => {
       header: "Actions",
       accessor: (order: Order) => (
         <ActionButtons
-          viewPath={`/admin/orders/${order.id}/view`}
-          editPath={`/admin/orders/${order.id}/edit`}
+          viewPath={`/dashboard/orders/${order.id}/view`}
+          editPath={`/dashboard/orders/${order.id}/edit`}
           onDelete={() => handleDeleteOrder(order.id)}
         />
       ),
@@ -190,7 +190,7 @@ const OrdersListPage = () => {
         title="Orders"
         action={
           <Link
-            to="/admin/orders/create"
+            to="/dashboard/orders/create"
             className="bg-indigo-600 text-white py-2 px-4 rounded-md flex items-center hover:bg-indigo-700"
           >
             <Plus className="w-5 h-5 mr-1" />

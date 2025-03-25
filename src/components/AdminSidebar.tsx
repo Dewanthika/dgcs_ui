@@ -13,16 +13,16 @@ const AdminSidebar = () => {
   return (
     <div className="w-64 bg-white border-r">
       <div className="p-6">
-        <Link to="/admin/dashboard" className="text-xl font-bold">
+        <Link to="/dashboard" className="text-xl font-bold">
           Logo
         </Link>
       </div>
 
       <nav className="mt-6">
         <Link
-          to="/admin/dashboard"
+          to="/dashboard"
           className={`px-4 py-3 flex items-center ${
-            isActive("/admin/dashboard")
+            isActive("/dashboard/dashboard")
               ? "bg-indigo-50 text-indigo-700 font-medium"
               : "text-gray-700 hover:bg-gray-100"
           }`}
@@ -32,9 +32,9 @@ const AdminSidebar = () => {
         </Link>
 
         <Link
-          to="/admin/orders"
+          to="/dashboard/orders"
           className={`px-4 py-3 flex items-center ${
-            isActive("/admin/orders") ? "bg-indigo-50 text-indigo-700 font-medium" : "text-gray-700 hover:bg-gray-100"
+            isActive("/dashboard/orders") ? "bg-indigo-50 text-indigo-700 font-medium" : "text-gray-700 hover:bg-gray-100"
           }`}
         >
           <ShoppingCart className="w-5 h-5 mr-3" />
@@ -42,9 +42,9 @@ const AdminSidebar = () => {
         </Link>
 
         <Link
-          to="/admin/products"
+          to="/dashboard/products"
           className={`px-4 py-3 flex items-center ${
-            isActive("/admin/products") ? "bg-indigo-50 text-indigo-700 font-medium" : "text-gray-700 hover:bg-gray-100"
+            isActive("/dashboard/products") ? "bg-indigo-50 text-indigo-700 font-medium" : "text-gray-700 hover:bg-gray-100"
           }`}
         >
           <Package className="w-5 h-5 mr-3" />
@@ -52,9 +52,9 @@ const AdminSidebar = () => {
         </Link>
 
         <Link
-          to="/admin/inventory"
+          to="/dashboard/inventory"
           className={`px-4 py-3 flex items-center ${
-            isActive("/admin/inventory")
+            isActive("/dashboard/inventory")
               ? "bg-indigo-50 text-indigo-700 font-medium"
               : "text-gray-700 hover:bg-gray-100"
           }`}
@@ -64,9 +64,9 @@ const AdminSidebar = () => {
         </Link>
 
         <Link
-          to="/admin/shipping"
+          to="/dashboard/shipping"
           className={`px-4 py-3 flex items-center ${
-            isActive("/admin/shipping") ? "bg-indigo-50 text-indigo-700 font-medium" : "text-gray-700 hover:bg-gray-100"
+            isActive("/dashboard/shipping") ? "bg-indigo-50 text-indigo-700 font-medium" : "text-gray-700 hover:bg-gray-100"
           }`}
         >
           <Truck className="w-5 h-5 mr-3" />
@@ -74,9 +74,9 @@ const AdminSidebar = () => {
         </Link>
 
         <Link
-          to="/admin/company"
+          to="/dashboard/company"
           className={`px-4 py-3 flex items-center ${
-            isActive("/admin/company") ? "bg-indigo-50 text-indigo-700 font-medium" : "text-gray-700 hover:bg-gray-100"
+            isActive("/dashboard/company") ? "bg-indigo-50 text-indigo-700 font-medium" : "text-gray-700 hover:bg-gray-100"
           }`}
         >
           <Building2 className="w-5 h-5 mr-3" />
@@ -84,9 +84,9 @@ const AdminSidebar = () => {
         </Link>
 
         <Link
-          to="/admin/users"
+          to="/dashboard/users"
           className={`px-4 py-3 flex items-center ${
-            isActive("/admin/users") ? "bg-indigo-50 text-indigo-700 font-medium" : "text-gray-700 hover:bg-gray-100"
+            isActive("/dashboard/users") ? "bg-indigo-50 text-indigo-700 font-medium" : "text-gray-700 hover:bg-gray-100"
           }`}
         >
           <User className="w-5 h-5 mr-3" />
@@ -94,9 +94,9 @@ const AdminSidebar = () => {
         </Link>
 
         <Link
-          to="/admin/reports"
+          to="/dashboard/reports"
           className={`px-4 py-3 flex items-center ${
-            isActive("/admin/reports") ? "bg-indigo-50 text-indigo-700 font-medium" : "text-gray-700 hover:bg-gray-100"
+            isActive("/dashboard/reports") ? "bg-indigo-50 text-indigo-700 font-medium" : "text-gray-700 hover:bg-gray-100"
           }`}
         >
           <BarChart3 className="w-5 h-5 mr-3" />

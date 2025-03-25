@@ -69,7 +69,7 @@ const ProductsListPage = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Products</h1>
         <Link
-          to="/admin/products/add"
+          to="/dashboard/products/add"
           className="bg-indigo-600 text-white py-2 px-4 rounded-md flex items-center hover:bg-indigo-700"
         >
           <Plus className="w-5 h-5 mr-1" />

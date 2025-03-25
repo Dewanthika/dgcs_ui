@@ -38,7 +38,7 @@ const AddProductPage = () => {
     alert("Product added successfully!")
 
     // Redirect to products list
-    navigate("/admin/products")
+    navigate("/dashboard/products")
   }
 
   return (
@@ -46,7 +46,7 @@ const AddProductPage = () => {
       <PageHeader title="Add Product" />
 
       <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-        <ProductForm onSubmit={handleSubmit} onCancel={() => navigate("/admin/products")} />
+        <ProductForm onSubmit={handleSubmit} onCancel={() => navigate("/dashboard/products")} />
       </div>
     </>
   )

@@ -174,7 +174,7 @@ const OrdersListPage = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Orders</h1>
         <Link
-          to="/admin/orders/create"
+          to="/dashboard/orders/create"
           className="bg-indigo-600 text-white py-2 px-4 rounded-md flex items-center hover:bg-indigo-700"
         >
           <Plus className="w-5 h-5 mr-1" />
@@ -256,14 +256,14 @@ const OrdersListPage = () => {
                     <td className="px-4 py-3 text-sm">
                       <div className="flex space-x-2">
                         <Link
-                          to={`/admin/orders/${order.id}/view`}
+                          to={`/dashboard/orders/${order.id}/view`}
                           className="text-blue-600 hover:text-blue-900"
                           title="View"
                         >
                           <Eye className="w-5 h-5" />
                         </Link>
                         <Link
-                          to={`/admin/orders/${order.id}/edit`}
+                          to={`/dashboard/orders/${order.id}/edit`}
                           className="text-green-600 hover:text-green-900"
                           title="Edit"
                         >

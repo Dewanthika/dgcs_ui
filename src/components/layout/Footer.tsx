@@ -9,7 +9,7 @@ const Footer = () => {
         <Link to="/" className="text-xl font-bold">
           LOGO
         </Link>
-        <p className="text-xs text-muted mt-2 sm:mt-0">Company Name © {currentYear}</p>
+        <p className="text-xs text-muted mt-2 sm:mt-0">DGCS Holdings © {currentYear}</p>
       </div>
     </footer>
   )

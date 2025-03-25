@@ -245,7 +245,7 @@ const InventoryPage = () => {
             +
           </button>
           <Link
-            to={`/admin/products/edit/${item.productID}`}
+            to={`/dashboard/products/edit/${item.productID}`}
             className="px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
           >
             <Edit className="h-4 w-4" />
@@ -261,7 +261,7 @@ const InventoryPage = () => {
         title="Inventory Management"
         action={
           <Link
-            to="/admin/products/add"
+            to="/dashboard/products/add"
             className="bg-indigo-600 text-white py-2 px-4 rounded-md flex items-center hover:bg-indigo-700"
           >
             <Plus className="w-5 h-5 mr-1" />

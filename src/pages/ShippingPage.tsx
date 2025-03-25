@@ -314,7 +314,7 @@ const ShippingPage = () => {
                     <td className="px-4 py-3 text-sm">
                       <div className="flex space-x-2">
                         <Link
-                          to={`/admin/orders/${record.orderId}/view`}
+                          to={`/dashboard/orders/${record.orderId}/view`}
                           className="text-blue-600 hover:text-blue-900"
                           title="View Order"
                         >

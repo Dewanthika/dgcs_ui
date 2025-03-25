@@ -149,7 +149,7 @@ const CreateOrderPage = () => {
     alert("Order created successfully!")
 
     // Redirect to orders list
-    navigate("/admin/orders")
+    navigate("/dashboard/orders")
   }
 
   return (
