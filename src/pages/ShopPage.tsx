@@ -83,7 +83,7 @@ const ShopPage = () => {
   })
 
   return (
-    <div className="container py-8">
+    <div className="container py-8 h-screen">
       <div className="mb-6">
         <form onSubmit={handleSearch} className="flex max-w-xl">
           <label htmlFor="search" className="flex items-center mr-2 font-medium">

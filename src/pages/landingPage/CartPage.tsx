@@ -58,7 +58,7 @@ const CartPage = () => {
   }
 
   return (
-    <div className="container py-8">
+    <div className="container py-8 h-screen">
       <div className="grid md:grid-cols-3 gap-8">
         {/* Cart Items - Left Side (2/3 width) */}
         <div className="md:col-span-2">

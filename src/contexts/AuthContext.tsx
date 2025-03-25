@@ -44,7 +44,7 @@ const AuthContext = ({ children }: IAuthContextProps) => {
   const onSuccess = (token: string, value: string) => {
     setAuth(true);
     setValue(token);
-    navigate(PathsEnum.DASHBOARD);
+    navigate('/dashboard');
     setLoading(false);
     // getUserProfile(value);
   };

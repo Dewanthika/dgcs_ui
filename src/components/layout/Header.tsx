@@ -1,37 +1,51 @@
-import { Link } from "react-router-dom"
-import { ShoppingCart } from "lucide-react"
+import { Link } from "react-router-dom";
+import { ShoppingCart } from "lucide-react";
+import useAuth from "../../hooks/useAuth";
 
 const Header = () => {
-  // In a real app, you would check if user is logged in and get user type
-  const isLoggedIn = true // This would be determined by your auth state
-  const userType = "admin" // Options: 'admin', 'customer', 'vendor', 'shipping'
+  const { isAuth } = useAuth();
 
   return (
-    <header className="bg-white shadow-sm py-4 w-full m-auto">
+    <header className="py-4 w-full m-auto">
       <div className="container flex justify-between items-center">
         <Link to="/" className="text-2xl font-bold">
           LOGO
         </Link>
         <nav className="flex items-center gap-6">
-          <Link to="/shop" className="text-sm hover:underline underline-offset-4">
+          <Link
+            to="/shop"
+            className="text-sm hover:underline underline-offset-4"
+          >
             Shop
           </Link>
 
-          {isLoggedIn ? (
+          {isAuth ? (
             <>
-              <Link to="/dashboard" className="text-sm hover:underline underline-offset-4">
+              <Link
+                to="/dashboard"
+                className="text-sm hover:underline underline-offset-4"
+              >
                 Dashboard
               </Link>
-              <Link to="/login" className="text-sm hover:underline underline-offset-4">
+              <Link
+                to="/login"
+                className="text-sm hover:underline underline-offset-4"
+              >
                 logout
               </Link>
             </>
           ) : (
             <>
-              <Link to="/login" className="text-sm hover:underline underline-offset-4">
+              <Link
+                to="/login"
+                className="text-sm hover:underline underline-offset-4"
+              >
                 Login
               </Link>
-              <Link to="/register" className="text-sm hover:underline underline-offset-4">
+              <Link
+                to="/register"
+                className="text-sm hover:underline underline-offset-4"
+              >
                 Register
               </Link>
             </>
@@ -45,8 +59,7 @@ const Header = () => {
         </nav>
       </div>
     </header>
-  )
-}
+  );
+};
 
-export default Header
-
+export default Header;

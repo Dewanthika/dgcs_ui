@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
-import useAuth from "../hooks/useAuth";
+import useAuth from "../../hooks/useAuth";
 import { SubmitHandler, useForm } from "react-hook-form";
-import ISigninInputs from "../types/ISigninInputs";
+import ISigninInputs from "../../types/ISigninInputs";
 
 const LoginPage = () => {
   const { signin, isLoading, errorMessage, setErrorMessage } = useAuth();
