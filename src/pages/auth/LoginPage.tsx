@@ -105,9 +105,9 @@ const LoginPage = () => {
       <div className="hidden lg:block lg:w-1/2 bg-gray-300">
         <div className="h-full flex items-center justify-center">
           <img
-            src="/placeholder.svg?height=400&width=400"
+            src="/login_image.webp"
             alt="Login"
-            className="max-w-md"
+            className="w-screen h-screen object-cover"
           />
         </div>
       </div>

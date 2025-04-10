@@ -1,121 +1,349 @@
-import type React from "react"
-import { useState, useEffect } from "react"
-import type { User } from "../../types"
-import FormField from "../../components/ui/FormField"
+import { useState } from "react";
+import { SubmitHandler, useForm, useWatch } from "react-hook-form";
+import FormField from "../../components/ui/FormField";
+import UserRoleEnum from "../../constant/userRoleEnum";
+import UserStatusEnum from "../../constant/userStatusEnum";
+import IUser from "../../types/IUser";
+import useApiFetch from "../../hooks/useApiFetch";
 
 interface UserFormProps {
-  initialData?: User
-  onSubmit: (data: Omit<User, "id">) => void
-  onCancel: () => void
+  initialData?: IUser;
+  onCancel: () => void;
 }
 
-const UserForm = ({ initialData, onSubmit, onCancel }: UserFormProps) => {
-  const isEditing = !!initialData
+const UserForm = ({ initialData, onCancel }: UserFormProps) => {
+  const isEditing = !!initialData;
 
-  const [formData, setFormData] = useState<Omit<User, "id">>({
-    userID: initialData?.userID || "",
-    userTypeID: initialData?.userTypeID || 1,
-    email: initialData?.email || "",
-    fname: initialData?.fname || "",
-    lname: initialData?.lname || "",
-    dob: initialData?.dob || "",
-    address: initialData?.address || "",
-    phone: initialData?.phone || "",
-    joinedDate: initialData?.joinedDate || new Date().toISOString().split("T")[0],
-    customerID: initialData?.customerID || "",
-    password: initialData?.password || "",
-    userRole: initialData?.userRole || "individual",
-    status: initialData?.status || "active",
-    companyName: initialData?.companyName || "",
-    businessRegNo: initialData?.businessRegNo || "",
-    contactPerson: initialData?.contactPerson || "",
-  })
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<IUser>({
+    defaultValues: {
+      fName: "",
+      lName: "",
+      email: "",
+      phone: "",
+      DOB: "",
+      address: "",
+      city: "",
+      district: "",
+      postal_code: "",
+      userType: UserRoleEnum.INDIVIDUAL,
+      status: UserStatusEnum.ACTIVE,
+      password: "",
+      passwordConfirm: "",
+      companyName: "",
+      businessRegNo: "",
+      contactPerson: "",
+      businessRegImage: "",
+    },
+  });
 
-  const [activeTab, setActiveTab] = useState<string>("basic")
-  const [passwordConfirm, setPasswordConfirm] = useState("")
-  const [passwordError, setPasswordError] = useState("")
+  const userRole = useWatch({ control, name: "userType" });
 
-  // Set password confirm value when editing
-  useEffect(() => {
-    if (isEditing && initialData) {
-      setPasswordConfirm(initialData.password)
+  const [activeTab, setActiveTab] = useState<string>("basic");
+  const {
+    postData,
+    isLoading: isUserCreateLoading,
+    error,
+  } = useApiFetch<FormData>({
+    url: `/user/`,
+    options: {
+      method: "post",
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    },
+  });
+
+  const isLoading = isUserCreateLoading;
+
+  const onSubmit: SubmitHandler<IUser> = async (data) => {
+    const formData = new FormData();
+
+    // Append text fields
+    formData.append("fName", data.fName);
+    formData.append("lName", data.lName);
+    formData.append("email", data.email);
+    formData.append("phone", data.phone);
+    formData.append("DOB", data.DOB);
+    formData.append("address", data.address);
+    formData.append("city", data.city);
+    formData.append("district", data.district);
+    formData.append("postal_code", data.postal_code);
+    formData.append("userType", data.userType);
+    formData.append("status", data.status);
+    formData.append("password", data.password);
+
+    if (data.passwordConfirm) delete data.passwordConfirm;
+    if (data.companyName) formData.append("companyName", data.companyName);
+    if (data.businessRegNo)
+      formData.append("businessRegNo", data.businessRegNo);
+    if (data.contactPerson)
+      formData.append("contactPerson", data.contactPerson);
+
+    // if (data.businessRegImage && data.businessRegImage.length > 0) {
+    //   formData.append("file", data.businessRegImage[0]);
+    // }
+
+    if (data.businessRegImage) {
+      let value: File | string | undefined;
+      if (data.businessRegImage && data.businessRegImage.length > 0) {
+        value = data.businessRegImage[0];
+      } else {
+        value = data.businessRegImage;
+      }
+      formData.append("file", value);
     }
-  }, [isEditing, initialData])
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
-
-    // Clear password error when either password field changes
-    if (name === "password") {
-      setPasswordError("")
+    try {
+      await postData(formData);
+      if (!error || !isLoading) {
+        // navigator(-1);
+        // reset();
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
     }
-  }
-
-  const handlePasswordConfirmChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPasswordConfirm(e.target.value)
-    setPasswordError("")
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-
-    // Validate passwords match if not editing or if password was changed
-    if (!isEditing && formData.password !== passwordConfirm) {
-      setPasswordError("Passwords do not match")
-      return
-    }
-
-    // Additional validation for company customers
-    if (formData.userRole === "company" && (!formData.companyName || !formData.businessRegNo)) {
-      alert("Please fill in all required company information")
-      setActiveTab("company")
-      return
-    }
-
-    onSubmit(formData)
-  }
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="space-y-6">
       {/* Tabs */}
-      <div className="flex border-b">
-        <button
-          type="button"
-          className={`px-4 py-2 font-medium ${
-            activeTab === "basic" ? "border-b-2 border-indigo-600 text-indigo-600" : "text-gray-500"
-          }`}
-          onClick={() => setActiveTab("basic")}
-        >
-          Basic Information
-        </button>
-        <button
-          type="button"
-          className={`px-4 py-2 font-medium ${
-            activeTab === "account" ? "border-b-2 border-indigo-600 text-indigo-600" : "text-gray-500"
-          }`}
-          onClick={() => setActiveTab("account")}
-        >
-          Account Details
-        </button>
-        {formData.userRole === "company" && (
+      <div className="flex space-x-4 border-b mb-6">
+        {["basic", "account", "company"].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            disabled={
+              tab === "company" &&
+              userRole.toLowerCase() !== UserRoleEnum.COMPANY.toLowerCase()
+            }
+            className={`px-4 py-2 font-medium ${
+              activeTab === tab
+                ? "border-b-2 border-indigo-600 text-indigo-600"
+                : "text-gray-500"
+            }`}
+          >
+            {tab === "basic"
+              ? "Basic Info"
+              : tab === "account"
+              ? "Account Details"
+              : "Company Info"}
+          </button>
+        ))}
+      </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {/* Basic Information Tab */}
+        {activeTab === "basic" && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField label="First Name" id="fname" required>
+                <input
+                  {...register("fName", { required: "First name is required" })}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+                {errors.fName && (
+                  <p className="text-red-500">{errors.fName.message}</p>
+                )}
+              </FormField>
+
+              <FormField label="Last Name" id="lname" required>
+                <input
+                  {...register("lName", { required: "Last name is required" })}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+                {errors.lName && (
+                  <p className="text-red-500">{errors.lName.message}</p>
+                )}
+              </FormField>
+            </div>
+
+            <FormField label="Email" id="email" required>
+              <input
+                {...register("email", { required: "Email is required" })}
+                type="email"
+                className="w-full p-2 border border-gray-300 rounded-md"
+              />
+              {errors.email && (
+                <p className="text-red-500">{errors.email.message}</p>
+              )}
+            </FormField>
+
+            <FormField label="Phone" id="phone" required>
+              <input
+                {...register("phone", { required: "Phone number is required" })}
+                type="tel"
+                className="w-full p-2 border border-gray-300 rounded-md"
+              />
+              {errors.phone && (
+                <p className="text-red-500">{errors.phone.message}</p>
+              )}
+            </FormField>
+
+            <FormField label="Date of Birth" id="dob" required>
+              <input
+                {...register("DOB", { required: "Date of birth is required" })}
+                type="date"
+                className="w-full p-2 border border-gray-300 rounded-md"
+              />
+              {errors.DOB && (
+                <p className="text-red-500">{errors.DOB.message}</p>
+              )}
+            </FormField>
+
+            {/* Address Section */}
+            <h2>Address</h2>
+            <hr />
+            <div className="grid grid-cols-4 gap-4">
+              <FormField label="Address" id="address" required>
+                <input
+                  {...register("address", { required: "Address is required" })}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+                {errors.address && (
+                  <p className="text-red-500">{errors.address.message}</p>
+                )}
+              </FormField>
+
+              <FormField label="City" id="city" required>
+                <input
+                  {...register("city", { required: "City is required" })}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+              </FormField>
+
+              <FormField label="District" id="district" required>
+                <input
+                  {...register("district", {
+                    required: "District is required",
+                  })}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+              </FormField>
+
+              <FormField label="Postal Code" id="postal_code" required>
+                <input
+                  {...register("postal_code", {
+                    required: "Postal code is required",
+                  })}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+              </FormField>
+            </div>
+          </div>
+        )}
+
+        {/* Account Details Tab */}
+        {activeTab === "account" && (
+          <div className="space-y-4">
+            <FormField label="User Role" id="userRole" required>
+              <select
+                {...register("userType")}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              >
+                <option value="Admin">Admin</option>
+                <option value="Staff">Staff</option>
+                <option value="Individual">Individual Customer</option>
+                <option value="Company">Company Customer</option>
+              </select>
+            </FormField>
+
+            <FormField label="Status" id="status" required>
+              <select
+                {...register("status")}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              >
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="pending">Pending</option>
+              </select>
+            </FormField>
+
+            {!isEditing && (
+              <>
+                <FormField label="Password" id="password" required>
+                  <input
+                    {...register("password", {
+                      required: "Password is required",
+                    })}
+                    type="password"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  />
+                </FormField>
+
+                <FormField
+                  label="Confirm Password"
+                  id="passwordConfirm"
+                  required
+                >
+                  <input
+                    {...register("passwordConfirm", {
+                      required: "Confirm password",
+                    })}
+                    type="password"
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  />
+                </FormField>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Company Information Tab */}
+        {activeTab === "company" &&
+          userRole.toLowerCase() === UserRoleEnum.COMPANY.toLowerCase() && (
+            <div className="space-y-4">
+              <FormField label="Company Name" id="companyName" required>
+                <input
+                  {...register("companyName", {
+                    required: "Company name is required",
+                  })}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+              </FormField>
+
+              <FormField
+                label="Business Registration Number"
+                id="businessRegNo"
+                required
+              >
+                <input
+                  {...register("businessRegNo", {
+                    required: "Business reg. number is required",
+                  })}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+              </FormField>
+              <input
+                type="file"
+                accept="image/*"
+                {...register("businessRegImage", {
+                  required: "Image is required",
+                })}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              />
+            </div>
+          )}
+
+        {/* Form Actions */}
+        <div className="flex justify-between pt-4 border-t">
           <button
             type="button"
-            className={`px-4 py-2 font-medium ${
-              activeTab === "company" ? "border-b-2 border-indigo-600 text-indigo-600" : "text-gray-500"
-            }`}
-            onClick={() => setActiveTab("company")}
+            onClick={onCancel}
+            className="px-4 py-2 bg-gray-200"
           >
-            Company Information
+            Cancel
           </button>
-        )}
-      </div>
-
+          <button type="submit" className="px-4 py-2 bg-indigo-600 text-white">
+            {isEditing ? "Update User" : "Add User"}
+          </button>
+        </div>
+      </form>
       {/* Basic Information Tab */}
-      {activeTab === "basic" && (
+      {/* {activeTab === "basic" && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField label="First Name" id="fname" required>
@@ -178,23 +406,55 @@ const UserForm = ({ initialData, onSubmit, onCancel }: UserFormProps) => {
               required
             />
           </FormField>
-
-          <FormField label="Address" id="address" required>
-            <textarea
-              id="address"
-              name="address"
-              value={formData.address}
-              onChange={handleInputChange}
-              rows={3}
-              className="w-full p-2 border border-gray-300 rounded-md"
-              required
-            />
-          </FormField>
+          <h2>Address</h2>
+          <hr />
+          <div className="grid grid-cols-4 gap-4">
+            <FormField label="Address" id="address" required>
+              <input
+                id="address"
+                name="address"
+                value={formData.address}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md"
+                required
+              />
+            </FormField>
+            <FormField label="City" id="city" required>
+              <input
+                id="city"
+                name="city"
+                value={formData.address}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md"
+                required
+              />
+            </FormField>
+            <FormField label="District" id="district" required>
+              <input
+                id="district"
+                name="district"
+                value={formData.address}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md"
+                required
+              />
+            </FormField>
+            <FormField label="Postal Code" id="postal_code" required>
+              <input
+                id="postal_code"
+                name="postal_code"
+                value={formData.address}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md"
+                required
+              />
+            </FormField>
+          </div>
         </div>
-      )}
+      )} */}
 
       {/* Account Details Tab */}
-      {activeTab === "account" && (
+      {/* {activeTab === "account" && (
         <div className="space-y-4">
           <FormField label="User Role" id="userRole" required>
             <select
@@ -229,25 +489,39 @@ const UserForm = ({ initialData, onSubmit, onCancel }: UserFormProps) => {
 
           {!isEditing ? (
             <>
-              <FormField label="Password" id="password" required error={passwordError}>
+              <FormField
+                label="Password"
+                id="password"
+                required
+                error={passwordError}
+              >
                 <input
                   type="password"
                   id="password"
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className={`w-full p-2 border ${passwordError ? "border-red-500" : "border-gray-300"} rounded-md`}
+                  className={`w-full p-2 border ${
+                    passwordError ? "border-red-500" : "border-gray-300"
+                  } rounded-md`}
                   required
                 />
               </FormField>
 
-              <FormField label="Confirm Password" id="passwordConfirm" required error={passwordError}>
+              <FormField
+                label="Confirm Password"
+                id="passwordConfirm"
+                required
+                error={passwordError}
+              >
                 <input
                   type="password"
                   id="passwordConfirm"
                   value={passwordConfirm}
                   onChange={handlePasswordConfirmChange}
-                  className={`w-full p-2 border ${passwordError ? "border-red-500" : "border-gray-300"} rounded-md`}
+                  className={`w-full p-2 border ${
+                    passwordError ? "border-red-500" : "border-gray-300"
+                  } rounded-md`}
                   required
                 />
               </FormField>
@@ -255,16 +529,16 @@ const UserForm = ({ initialData, onSubmit, onCancel }: UserFormProps) => {
           ) : (
             <div className="bg-yellow-50 p-4 rounded-md border border-yellow-200">
               <p className="text-yellow-700 text-sm">
-                Password fields are not shown when editing a user. To change a user's password, please use the reset
-                password function.
+                Password fields are not shown when editing a user. To change a
+                user's password, please use the reset password function.
               </p>
             </div>
           )}
         </div>
-      )}
+      )} */}
 
       {/* Company Information Tab */}
-      {activeTab === "company" && formData.userRole === "company" && (
+      {/* {activeTab === "company" && formData.userRole === "company" && (
         <div className="space-y-4">
           <FormField label="Company Name" id="companyName" required>
             <input
@@ -278,7 +552,11 @@ const UserForm = ({ initialData, onSubmit, onCancel }: UserFormProps) => {
             />
           </FormField>
 
-          <FormField label="Business Registration Number" id="businessRegNo" required>
+          <FormField
+            label="Business Registration Number"
+            id="businessRegNo"
+            required
+          >
             <input
               type="text"
               id="businessRegNo"
@@ -301,10 +579,10 @@ const UserForm = ({ initialData, onSubmit, onCancel }: UserFormProps) => {
             />
           </FormField>
         </div>
-      )}
+      )} */}
 
       {/* Form Actions */}
-      <div className="flex justify-between pt-4 border-t">
+      {/* <div className="flex justify-between pt-4 border-t">
         <div>
           {activeTab === "basic" && formData.userRole === "company" && (
             <button
@@ -342,14 +620,16 @@ const UserForm = ({ initialData, onSubmit, onCancel }: UserFormProps) => {
           >
             Cancel
           </button>
-          <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+          <button
+            type="submit"
+            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+          >
             {isEditing ? "Update User" : "Add User"}
           </button>
         </div>
-      </div>
-    </form>
-  )
-}
+      </div> */}
+    </div>
+  );
+};
 
-export default UserForm
-
+export default UserForm;

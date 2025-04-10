@@ -1,24 +1,4 @@
-// User types
-export interface User {
-    id: number
-    userID: string
-    userTypeID: number
-    email: string
-    fname: string
-    lname: string
-    dob: string
-    address: string
-    phone: string
-    joinedDate: string
-    customerID: string
-    password: string
-    userRole: "admin" | "staff" | "individual" | "company"
-    status: "active" | "inactive" | "pending"
-    // Additional fields for company customers
-    companyName?: string
-    businessRegNo?: string
-    contactPerson?: string
-  }
+
   
   // Product types
   export interface Product {

@@ -20,6 +20,7 @@ interface IUseApiFetchProps {
   options?: IUseApiFetchOptions;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
 const useApiFetch = <T extends unknown>({
   url,
   options = {},
