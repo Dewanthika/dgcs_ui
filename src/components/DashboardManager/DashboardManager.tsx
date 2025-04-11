@@ -3,19 +3,24 @@ import AdminDashboardPage from "../../pages/dashboard/Admin";
 import ShippingDashboardPage from "../../pages/dashboard/Shipping/ShippingDashboardPage";
 import VendorDashboardPage from "../../pages/dashboard/Vender/VendorDashboardPage";
 
+import { useAppSelector } from "../../store/store";
+import { getProfile } from "../../store/selectors/userSelector";
+import UserRoleEnum from "../../constant/userRoleEnum";
+
 const DashboardManager = () => {
-  const userType = "admin"; // Options: 'admin', 'customer', 'vendor', 'shipping'
+  const user = useAppSelector(getProfile);
 
-  switch (userType) {
-    case "admin":
+  if (!user?.userType) return <></>;
+
+  switch (user.userType) {
+    case UserRoleEnum.ADMIN:
       return <AdminDashboardPage />;
-    case "customer":
+    case UserRoleEnum.INDIVIDUAL:
       return <CustomerDashboardPage />;
-    case "vendor":
+    case UserRoleEnum.COMPANY:
       return <VendorDashboardPage />;
-    case "shipping":
+    case UserRoleEnum.STAFF:
       return <ShippingDashboardPage />;
-
     default:
       return <></>;
   }

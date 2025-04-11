@@ -2,11 +2,13 @@ import { createContext, ReactNode, useEffect, useState } from "react";
 import { redirect, useLocation, useNavigate } from "react-router";
 import GeneralEnum from "../constant/generalEnum";
 import PathsEnum from "../constant/pathsEnum";
-import { handleAxiosError } from "../helpers/axiosHelper";
-import useLocalStorage from "../hooks/useLocalStorage";
-import ISigninInputs from "../types/ISigninInputs";
 import authAxiosInstance from "../helpers/authHelper";
+import { handleAxiosError } from "../helpers/axiosHelper";
 import { isValidToken } from "../helpers/generalHelper";
+import useLocalStorage from "../hooks/useLocalStorage";
+import { fetchUserByEmail } from "../store/silces/userSlice";
+import { useAppDispatch } from "../store/store";
+import ISigninInputs from "../types/ISigninInputs";
 
 interface IAuthContextProps {
   children: ReactNode;
@@ -34,7 +36,7 @@ const AuthContext = ({ children }: IAuthContextProps) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // const dispatch = useAppDispatch();
+  const dispatch = useAppDispatch();
 
   const { storedValue, setValue, removeValue } = useLocalStorage({
     key: GeneralEnum.ACCESSTOKEN,
@@ -44,18 +46,14 @@ const AuthContext = ({ children }: IAuthContextProps) => {
   const onSuccess = (token: string, value: string) => {
     setAuth(true);
     setValue(token);
-    navigate('/dashboard');
+    navigate("/dashboard");
     setLoading(false);
-    // getUserProfile(value);
+    getUserProfile(value);
   };
 
-  // const getUserProfile = async (value: string) => {
-  //   if (isEmployee) {
-  //     await dispatch(fetchEmployeeProfileDetail(value));
-  //   } else {
-  //     await dispatch(fetchCustomerProfileDetail(value));
-  //   }
-  // };
+  const getUserProfile = async (value: string) => {
+    await dispatch(fetchUserByEmail(value));
+  };
 
   const signin = async ({ email, password }: ISigninInputs) => {
     try {

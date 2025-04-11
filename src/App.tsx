@@ -26,14 +26,17 @@ import ShippingPage from "./pages/ShippingPage";
 import ShopPage from "./pages/ShopPage";
 import UsersPage from "./pages/users/UsersPage";
 import ViewOrderPage from "./pages/ViewOrderPage";
+
 import AuthGuard from "./guards/AuthGuard";
 import GuestGuard from "./guards/GuestGuard";
+import RoleGuard from "./guards/RoleGuard";
+import UserRoleEnum from "./constant/userRoleEnum";
 
 function App() {
   return (
     <div className="flex flex-col min-h-screen">
       <Routes>
-        {/* Admin Routes - Using nested routes with AdminLayout */}
+        {/* Admin Routes */}
         <Route
           element={
             <AuthGuard>
@@ -41,37 +44,62 @@ function App() {
             </AuthGuard>
           }
         >
-          {/* Dashboard Management */}
+          {/* Accessible by all authenticated roles */}
           <Route path="/dashboard" element={<DashboardManager />} />
 
-          {/* Product Management */}
-          <Route path="/dashboard/products" element={<ProductsListPage />} />
-          <Route path="/dashboard/products/add" element={<AddProductPage />} />
+          {/* Product Management - Admin & Staff */}
+          <Route
+            element={
+              <RoleGuard allowedRoles={[UserRoleEnum.ADMIN, UserRoleEnum.STAFF]} />
+            }
+          >
+            <Route path="/dashboard/products" element={<ProductsListPage />} />
+            <Route path="/dashboard/products/add" element={<AddProductPage />} />
+          </Route>
 
-          {/* Order Management */}
-          <Route path="/dashboard/orders" element={<OrdersListPage />} />
+          {/* Order Management - Admin & Staff */}
           <Route
-            path="/dashboard/orders/create"
-            element={<CreateOrderPage />}
-          />
-          <Route
-            path="/dashboard/orders/:id/edit"
-            element={<EditOrderPage />}
-          />
-          <Route
-            path="/dashboard/orders/:id/view"
-            element={<ViewOrderPage />}
-          />
+            element={
+              <RoleGuard allowedRoles={[UserRoleEnum.ADMIN, UserRoleEnum.STAFF]} />
+            }
+          >
+            <Route path="/dashboard/orders" element={<OrdersListPage />} />
+            <Route path="/dashboard/orders/create" element={<CreateOrderPage />} />
+            <Route path="/dashboard/orders/:id/edit" element={<EditOrderPage />} />
+            <Route path="/dashboard/orders/:id/view" element={<ViewOrderPage />} />
+          </Route>
 
-          {/* New Admin Pages */}
-          <Route path="/dashboard/inventory" element={<InventoryPage />} />
-          <Route path="/dashboard/shipping" element={<ShippingPage />} />
-          <Route path="/dashboard/company" element={<CompanyPage />} />
-          <Route path="/dashboard/users" element={<UsersPage />} />
-          <Route path="/dashboard/reports" element={<ReportsPage />} />
+          {/* Inventory & Shipping - Admin & Staff */}
+          <Route
+            element={
+              <RoleGuard allowedRoles={[UserRoleEnum.ADMIN, UserRoleEnum.STAFF]} />
+            }
+          >
+            <Route path="/dashboard/inventory" element={<InventoryPage />} />
+            <Route path="/dashboard/shipping" element={<ShippingPage />} />
+          </Route>
+
+          {/* Company Page - Admin & Company */}
+          <Route
+            element={
+              <RoleGuard allowedRoles={[UserRoleEnum.ADMIN, UserRoleEnum.COMPANY]} />
+            }
+          >
+            <Route path="/dashboard/company" element={<CompanyPage />} />
+          </Route>
+
+          {/* Users & Reports - Admin Only */}
+          <Route
+            element={
+              <RoleGuard allowedRoles={[UserRoleEnum.ADMIN]} />
+            }
+          >
+            <Route path="/dashboard/users" element={<UsersPage />} />
+            <Route path="/dashboard/reports" element={<ReportsPage />} />
+          </Route>
         </Route>
 
-        {/* Customer-facing routes with Header and Footer */}
+        {/* Customer-facing routes */}
         <Route path="/" element={<LandingPageLayout />}>
           <Route element={<HomePage />} index />
           <Route path="/shop" element={<ShopPage />} />
@@ -86,7 +114,7 @@ function App() {
 
         {/* Authentication Routes */}
         <Route element={<GuestGuard />}>
-          <Route path={"/"} element={<Outlet />}>
+          <Route path="/" element={<Outlet />}>
             <Route index element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
