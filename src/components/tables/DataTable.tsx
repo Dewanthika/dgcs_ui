@@ -49,8 +49,8 @@ function DataTable<T>({
           </tr>
         </thead>
         <tbody className="divide-y">
-          {data.length > 0 ? (
-            data.map((item) => (
+          {data?.length > 0 ? (
+            data?.map((item) => (
               <tr key={keyExtractor(item)} className="hover:bg-gray-50">
                 {columns.map((column, columnIndex) => (
                   <td key={columnIndex} className="px-4 py-3 text-sm">

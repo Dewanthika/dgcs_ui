@@ -2,38 +2,41 @@ import { Filter } from "lucide-react";
 import { useState } from "react";
 import DataTable from "../../../components/tables/DataTable";
 import SearchBar from "../../../components/ui/SearchBar";
-import { User } from "../../../types";
+import IUser from "../../../types/IUser";
 
-const UserTable = () => {
-  const [users, setUsers] = useState<User[]>([]);
+interface IUserTableProps {
+  users: IUser[];
+}
+
+const UserTable = ({ users }: IUserTableProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  
+
   // Filter users based on search term, role, and status
-  const filteredUsers = users.filter((user) => {
+  const filteredUsers = users?.filter((user) => {
     const matchesSearch =
-      user.fname.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.lname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.fName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.lName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.userID.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user?._id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (user.companyName &&
         user.companyName.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    const matchesRole = roleFilter === "all" || user.userRole === roleFilter;
+    const matchesRole = roleFilter === "all" || user.userType === roleFilter;
     const matchesStatus =
       statusFilter === "all" || user.status === statusFilter;
 
     return matchesSearch && matchesRole && matchesStatus;
   });
 
-//   // Get counts for each role
-//   const roleCounts = {
-//     admin: users.filter((user) => user.userRole === "admin").length,
-//     staff: users.filter((user) => user.userRole === "staff").length,
-//     individual: users.filter((user) => user.userRole === "individual").length,
-//     company: users.filter((user) => user.userRole === "company").length,
-//   };
+  //   // Get counts for each role
+  //   const roleCounts = {
+  //     admin: users.filter((user) => user.userRole === "admin").length,
+  //     staff: users.filter((user) => user.userRole === "staff").length,
+  //     individual: users.filter((user) => user.userRole === "individual").length,
+  //     company: users.filter((user) => user.userRole === "company").length,
+  //   };
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
       <div className="p-4 border-b flex flex-col sm:flex-row justify-between gap-4">
@@ -79,9 +82,12 @@ const UserTable = () => {
 
       <DataTable
         columns={[
-          { header: "User ID", accessor: "userID" },]}
+          { header: "Name", accessor: (user) => user.fName },
+          { header: "Role", accessor: (user) => user.userType },
+          { header: "Email", accessor: (user) => user.email },
+        ]}
         data={filteredUsers}
-        keyExtractor={(user) => user.id}
+        keyExtractor={(user) => user?._id || "unknown-id"}
         emptyMessage={
           searchTerm || roleFilter !== "all" || statusFilter !== "all"
             ? "No users found. Try changing your filters."

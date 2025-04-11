@@ -1,16 +1,21 @@
 import { UserPlus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Modal from "../../components/ui/Modal";
 import PageHeader from "../../components/ui/PageHeader";
 import UserForm from "../../features/users/UserForm";
+import useFetch from "../../hooks/useFetch";
+import IUser from "../../types/IUser";
 import UserStatics from "./UserStatics";
 import UserTable from "./UserTable";
-import IUser from "../../types/IUser";
 
 const UsersPage = () => {
-  // const [users, setUsers] = useState<IUser[]>([]);
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [currentUser, setCurrentUser] = useState<IUser>();
+
+  const { data: users } = useFetch<IUser[]>({
+    url: "/user",
+    initialLoad: true,
+  });
 
   // useEffect(() => {
   //   // Generate mock users with the new user roles
@@ -213,7 +218,7 @@ const UsersPage = () => {
       {/* User Stats */}
       <UserStatics />
 
-      <UserTable />
+      <UserTable users={users!} />
 
       {/* Add/Edit User Modal */}
       <Modal
