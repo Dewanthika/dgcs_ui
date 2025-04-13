@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom"
+import { Link, useLocation } from "react-router-dom";
 import {
   LayoutGrid,
   ShoppingCart,
@@ -8,25 +8,25 @@ import {
   Building2,
   User,
   BarChart3,
-} from "lucide-react"
-import { useAppSelector } from "../store/store"
-import { getProfile } from "../store/selectors/userSelector"
-import UserRoleEnum from "../constant/userRoleEnum"
+} from "lucide-react";
+import { useAppSelector } from "../store/store";
+import { getProfile } from "../store/selectors/userSelector";
+import UserRoleEnum from "../constant/userRoleEnum";
+import useAuth from "../hooks/useAuth";
 
 const AdminSidebar = () => {
-  const location = useLocation()
-  const path = location.pathname
-  const user = useAppSelector(getProfile)
+  const location = useLocation();
+  const { signout } = useAuth();
+  const path = location.pathname;
+  const user = useAppSelector(getProfile);
 
   const isActive = (route: string) => path.startsWith(route);
 
-  
   // Role checking helper
   const hasAccess = (roles: UserRoleEnum[]) => {
-    return user && roles.includes(user.userType)
-  }
-  
-  console.log(hasAccess([UserRoleEnum.ADMIN, UserRoleEnum.STAFF]))
+    return user && roles.includes(user.userType);
+  };
+
   return (
     <div className="w-64 bg-white border-r">
       <div className="p-6">
@@ -158,11 +158,12 @@ const AdminSidebar = () => {
           </div>
           <div className="ml-3">
             <p className="font-medium">{user?.fName || "Admin"}</p>
+            <button onClick={signout}>Logout</button>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default AdminSidebar
+export default AdminSidebar;
