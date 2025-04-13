@@ -1,19 +1,14 @@
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import { ChevronDown, Minus, Plus, Trash2 } from "lucide-react"
-
-interface CartItem {
-  id: number
-  title: string
-  price: number
-  quantity: number
-  imageUrl: string
-}
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ChevronDown, Minus, Plus, Trash2 } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "../../store/store";
+import { getAllCartItems } from "../../store/selectors/cartSelector";
+import { removeFromCart, updateQuantity } from "../../store/slice/cartSlice";
 
 const CheckoutPage = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   // Form state
   const [formData, setFormData] = useState({
@@ -27,69 +22,56 @@ const CheckoutPage = () => {
     postalCode: "",
     phone: "",
     saveInformation: false,
-  })
+  });
 
-  // Cart items
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: 1,
-      title: "Product Title",
-      price: 895,
-      quantity: 1,
-      imageUrl: "/placeholder.svg?height=200&width=200",
-    },
-    {
-      id: 2,
-      title: "Product Title",
-      price: 8.95,
-      quantity: 1,
-      imageUrl: "/placeholder.svg?height=200&width=200",
-    },
-  ])
+  const cartItems = useAppSelector(getAllCartItems);
+  const dispatch = useAppDispatch();
 
   // Calculate totals
-  const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
-  const shipping = 300
-  const total = subtotal + shipping
+  const subtotal = cartItems.reduce(
+    (total, item) => total + (item.price || 0) * item.quantity,
+    0
+  );
+  const shipping = 300;
+  const total = subtotal + shipping;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target
+    const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
       [name]: type === "checkbox" ? checked : value,
-    })
-  }
+    });
+  };
 
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
-    })
-  }
+    });
+  };
 
-  const handleQuantityChange = (id: number, newQuantity: number) => {
-    if (newQuantity < 1) return
+  const handleQuantityChange = (id: string, newQuantity: number) => {
+    if (newQuantity < 1) return; // Prevents negative quantity
+    dispatch(updateQuantity({ id, quantity: newQuantity }));
+  };
 
-    setCartItems(cartItems.map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item)))
-  }
-
-  const handleRemoveItem = (id: number) => {
-    setCartItems(cartItems.filter((item) => item.id !== id))
-  }
+  const handleRemoveItem = (id: string) => {
+    dispatch(removeFromCart(id));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Checkout form submitted:", formData)
-    console.log("Cart items:", cartItems)
+    e.preventDefault();
+    console.log("Checkout form submitted:", formData);
+    console.log("Cart items:", cartItems);
     // In a real app, you would process the payment here
     // For now, we'll just navigate to the success page
-    navigate("/payment-success")
-  }
+    navigate("/payment-success");
+  };
 
   const handleReturnToCart = () => {
-    navigate("/cart")
-  }
+    navigate("/cart");
+  };
 
   return (
     <div className="container py-8">
@@ -249,7 +231,10 @@ const CheckoutPage = () => {
                 Return to cart
               </button>
 
-              <button type="submit" className="bg-black text-white px-6 py-2 uppercase text-sm font-medium">
+              <button
+                type="submit"
+                className="bg-black text-white px-6 py-2 uppercase text-sm font-medium"
+              >
                 Continue to shipping
               </button>
             </div>
@@ -275,23 +260,25 @@ const CheckoutPage = () => {
             {/* Cart Items */}
             <div className="space-y-6 mb-6">
               {cartItems.map((item) => (
-                <div key={item.id} className="flex items-center gap-4">
+                <div key={item._id} className="flex items-center gap-4">
                   <div className="w-16 h-16 bg-gray-200 flex-shrink-0">
                     <img
-                      src={item.imageUrl || "/placeholder.svg"}
-                      alt={item.title}
+                      src={item.imageURL || "/placeholder.svg"}
+                      alt={item.productName}
                       className="w-full h-full object-contain"
                     />
                   </div>
 
                   <div className="flex-grow">
-                    <h3 className="font-medium">{item.title}</h3>
+                    <h3 className="font-medium">{item.productName}</h3>
 
                     <div className="flex items-center mt-2">
                       <div className="flex items-center border rounded-md">
                         <button
                           type="button"
-                          onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                          onClick={() =>
+                            handleQuantityChange(item._id!, item.quantity - 1)
+                          }
                           className="px-2 py-0.5"
                           aria-label="Decrease quantity"
                         >
@@ -300,7 +287,9 @@ const CheckoutPage = () => {
                         <span className="px-3 py-0.5">{item.quantity}</span>
                         <button
                           type="button"
-                          onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                          onClick={() =>
+                            handleQuantityChange(item._id!, item.quantity + 1)
+                          }
                           className="px-2 py-0.5"
                           aria-label="Increase quantity"
                         >
@@ -314,7 +303,7 @@ const CheckoutPage = () => {
                     <div className="font-bold">LKR {item.price}</div>
                     <button
                       type="button"
-                      onClick={() => handleRemoveItem(item.id)}
+                      onClick={() => handleRemoveItem(item._id!)}
                       className="text-gray-500 hover:text-black mt-2"
                       aria-label="Remove item"
                     >
@@ -346,8 +335,7 @@ const CheckoutPage = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default CheckoutPage
-
+export default CheckoutPage;

@@ -64,6 +64,20 @@ const AdminSidebar = () => {
 
         {hasAccess([UserRoleEnum.ADMIN, UserRoleEnum.STAFF]) && (
           <Link
+            to="/dashboard/category"
+            className={`px-4 py-3 flex items-center ${
+              isActive("/dashboard/category")
+                ? "bg-indigo-50 text-indigo-700 font-medium"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            <Package className="w-5 h-5 mr-3" />
+            Category
+          </Link>
+        )}
+
+        {hasAccess([UserRoleEnum.ADMIN, UserRoleEnum.STAFF]) && (
+          <Link
             to="/dashboard/products"
             className={`px-4 py-3 flex items-center ${
               isActive("/dashboard/products")

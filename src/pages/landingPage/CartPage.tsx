@@ -1,6 +1,9 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { Minus, Plus, Trash2 } from "lucide-react"
+import { useAppDispatch, useAppSelector } from "../../store/store"
+import { getAllCartItems } from "../../store/selectors/cartSelector"
+import { removeFromCart, updateQuantity } from "../../store/slice/cartSlice"
 
 interface CartItem {
   id: number
@@ -12,41 +15,25 @@ interface CartItem {
 
 const CartPage = () => {
   const navigate = useNavigate()
-
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: 1,
-      title: "Product Title",
-      price: 895,
-      quantity: 1,
-      imageUrl: "/placeholder.svg?height=200&width=200",
-    },
-    {
-      id: 2,
-      title: "Product Title",
-      price: 895,
-      quantity: 1,
-      imageUrl: "/placeholder.svg?height=200&width=200",
-    },
-  ])
+  const cartItems = useAppSelector(getAllCartItems);
+  const dispatch = useAppDispatch()
 
   const [couponCode, setCouponCode] = useState("")
 
   // Calculate cart totals
-  const subtotal = cartItems.reduce((total, item) => total + item.price * item.quantity, 0)
+  const subtotal = cartItems.reduce((total, item) => total + (item?.price ?? 0) * item.quantity, 0)
   const shipping = 466
   const discount = 120
   const total = subtotal + shipping - discount
 
-  const handleQuantityChange = (id: number, newQuantity: number) => {
-    if (newQuantity < 1) return
+  const handleUpdateQuantity = (itemId: string, newQuantity: number) => {
+    if (newQuantity < 1) return; // Prevents negative quantity
+    dispatch(updateQuantity({ id: itemId, quantity: newQuantity }));
+  };
 
-    setCartItems(cartItems.map((item) => (item.id === id ? { ...item, quantity: newQuantity } : item)))
-  }
-
-  const handleRemoveItem = (id: number) => {
-    setCartItems(cartItems.filter((item) => item.id !== id))
-  }
+  const handleRemoveItem = (itemId: string) => {
+    dispatch(removeFromCart(itemId));
+  };
 
   // const handleApplyCoupon = () => {
   //   console.log("Applying coupon:", couponCode)
@@ -72,23 +59,23 @@ const CartPage = () => {
           <div className="border-t">
             {cartItems.length > 0 ? (
               cartItems.map((item) => (
-                <div key={item.id} className="py-6 border-b">
+                <div key={item._id} className="py-6 border-b">
                   <div className="flex items-center gap-4">
                     <div className="w-24 h-24 bg-gray-200 flex-shrink-0">
                       <img
-                        src={item.imageUrl || "/placeholder.svg"}
-                        alt={item.title}
+                        src={item.imageURL || "/placeholder.svg"}
+                        alt={item.productName}
                         className="w-full h-full object-contain"
                       />
                     </div>
 
                     <div className="flex-grow">
-                      <h3 className="font-medium text-lg">{item.title}</h3>
+                      <h3 className="font-medium text-lg">{item.productName}</h3>
 
                       <div className="flex items-center mt-2">
                         <div className="flex items-center border rounded-md">
                           <button
-                            onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                            onClick={() => handleUpdateQuantity(item._id!, item.quantity - 1)}
                             className="px-3 py-1"
                             aria-label="Decrease quantity"
                           >
@@ -96,7 +83,7 @@ const CartPage = () => {
                           </button>
                           <span className="px-4 py-1">{item.quantity}</span>
                           <button
-                            onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                            onClick={() => handleUpdateQuantity(item._id!, item.quantity + 1)}
                             className="px-3 py-1"
                             aria-label="Increase quantity"
                           >
@@ -109,7 +96,7 @@ const CartPage = () => {
                     <div className="text-right">
                       <div className="font-bold text-lg">LKR {item.price}</div>
                       <button
-                        onClick={() => handleRemoveItem(item.id)}
+                        onClick={() => handleRemoveItem(item._id!)}
                         className="text-gray-500 hover:text-black mt-2"
                         aria-label="Remove item"
                       >

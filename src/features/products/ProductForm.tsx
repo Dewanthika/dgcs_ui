@@ -1,87 +1,129 @@
-import type React from "react"
 
-import { useState, useRef } from "react"
-import type { ProductFormData } from "../../types"
-import FormField from "../../components/ui/FormField"
-import { ImagePlus } from "lucide-react"
+import { useForm } from "react-hook-form";
+import { io } from "socket.io-client";
+import FileInput from "../../components/ui/FileUpload";
+import FormField from "../../components/ui/FormField";
+import { convertFileToBase64 } from "../../helpers/generalHelper";
+import useGetAllCategory from "../../hooks/useGetAllCategory";
+import type { ProductFormData } from "../../types";
+import IProduct from "../../types/IProduct";
 
 interface ProductFormProps {
-  initialData?: ProductFormData
-  onSubmit: (data: ProductFormData, previewUrls: string[]) => void
-  onCancel: () => void
+  initialData?: ProductFormData;
+  onCancel: () => void;
 }
 
-const ProductForm = ({ initialData, onSubmit, onCancel }: ProductFormProps) => {
-  const fileInputRef = useRef<HTMLInputElement>(null)
-  const isEditing = !!initialData
+// Socket connection to the WebSocket server
+const socket = io("http://localhost:8080/products", {
+  withCredentials: true,
+});
 
-  const [formData, setFormData] = useState<ProductFormData>(
-    initialData || {
-      productName: "",
-      price: "",
-      categoryID: "",
-      productID: "",
-      productDescription: "",
-      images: [],
-      weight: "",
-      createdAt: new Date().toISOString().split("T")[0],
-      uploadedAt: new Date().toISOString().split("T")[0],
-      stock: "10",
-    },
-  )
+const ProductForm = ({ initialData, onCancel }: ProductFormProps) => {
+  const { data: category } = useGetAllCategory();
+  const isEditing = !!initialData;
 
-  const [previewUrls, setPreviewUrls] = useState<string[]>([])
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm<IProduct>({});
+  //   e: React.ChangeEvent<
+  //     HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+  //   >
+  // ) => {
+  //   const { name, value } = e.target;
+  //   setFormData((prev) => ({ ...prev, [name]: value }));
+  // };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   if (e.target.files) {
+  //     const filesArray = Array.from(e.target.files);
+  //     setFormData((prev) => ({
+  //       ...prev,
+  //       images: [...prev.images, ...filesArray],
+  //     }));
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const filesArray = Array.from(e.target.files)
-      setFormData((prev) => ({ ...prev, images: [...prev.images, ...filesArray] }))
+  //     // Create preview URLs
+  //     const newPreviewUrls = filesArray.map((file) =>
+  //       URL.createObjectURL(file)
+  //     );
+  //     setPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+  //   }
+  // };
 
-      // Create preview URLs
-      const newPreviewUrls = filesArray.map((file) => URL.createObjectURL(file))
-      setPreviewUrls((prev) => [...prev, ...newPreviewUrls])
+  // const handleRemoveImage = (index: number) => {
+  //   // Remove image from formData
+  //   const newImages = [...formData.images];
+  //   newImages.splice(index, 1);
+  //   setFormData((prev) => ({ ...prev, images: newImages }));
+
+  //   // Remove preview URL and revoke object URL to free memory
+  //   URL.revokeObjectURL(previewUrls[index]);
+  //   const newPreviewUrls = [...previewUrls];
+  //   newPreviewUrls.splice(index, 1);
+  //   setPreviewUrls(newPreviewUrls);
+  // };
+
+
+  const onSubmit = async (data: IProduct) => {
+    console.log("Form submitted:", data);
+
+    let base64: string | undefined;
+
+    // Handle file conversion to base64
+    if (data.image) {
+      let file: File;
+      
+      if (data.image instanceof FileList && data.image.length > 0) {
+        file = data.image[0];
+        base64 = await convertFileToBase64(file);
+      }
     }
-  }
 
-  const handleRemoveImage = (index: number) => {
-    // Remove image from formData
-    const newImages = [...formData.images]
-    newImages.splice(index, 1)
-    setFormData((prev) => ({ ...prev, images: newImages }))
+    // Destructure and exclude image (imgUrl should not go to backend)
+    const {
+      imageURL, // ignore
+      ...rest
+    } = data;
 
-    // Remove preview URL and revoke object URL to free memory
-    URL.revokeObjectURL(previewUrls[index])
-    const newPreviewUrls = [...previewUrls]
-    newPreviewUrls.splice(index, 1)
-    setPreviewUrls(newPreviewUrls)
-  }
+    const createProductDto = {
+      ...rest,
+    };
 
-  const triggerFileInput = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click()
+    const payload = {
+      createProductDto,
+      file: base64,
+    };
+
+    try {
+      // if (isEdit) {
+      //   socket.emit("updateProduct", {
+      //     id,
+      //     updateProductDto: createProductDto,
+      //     file: base64,
+      //   });
+      // } else {
+      // }
+      socket.emit("createProduct", payload);
+      onCancel()
+      // navigator("/product");
+    } catch (error) {
+      console.error("Error submitting form:", error);
     }
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSubmit(formData, previewUrls)
-  }
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <FormField label="Product Name" id="productName" required>
           <input
             type="text"
             id="productName"
-            name="productName"
-            value={formData.productName}
-            onChange={handleInputChange}
+            {...register("productName", {
+              required: "Product name is required",
+            })}
             className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             required
           />
@@ -91,9 +133,9 @@ const ProductForm = ({ initialData, onSubmit, onCancel }: ProductFormProps) => {
           <input
             type="number"
             id="price"
-            name="price"
-            value={formData.price}
-            onChange={handleInputChange}
+            {...register("price", {
+              required: "Price is required",
+            })}
             className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             required
           />
@@ -104,18 +146,23 @@ const ProductForm = ({ initialData, onSubmit, onCancel }: ProductFormProps) => {
         <FormField label="Category" id="categoryID" required>
           <select
             id="categoryID"
-            name="categoryID"
-            value={formData.categoryID}
-            onChange={handleInputChange}
+            {...register("categoryID", {
+              required: "Product name is required",
+            })}
             className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             required
           >
             <option value="">Select Category</option>
-            <option value="1">Gloves</option>
+            {category?.map((cat) => (
+              <option key={cat._id} value={cat._id}>
+                {cat.name}
+              </option>
+            ))}
+            {/* <option value="1">Gloves</option>
             <option value="2">Helment</option>
             <option value="3">Gum Boot</option>
             <option value="4">Earmuff</option>
-            <option value="5">Safety Spectacles</option>
+            <option value="5">Safety Spectacles</option> */}
           </select>
         </FormField>
 
@@ -123,9 +170,9 @@ const ProductForm = ({ initialData, onSubmit, onCancel }: ProductFormProps) => {
           <input
             type="number"
             id="weight"
-            name="weight"
-            value={formData.weight}
-            onChange={handleInputChange}
+            {...register("weight", {
+              required: "Product name is required",
+            })}
             className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             required
           />
@@ -137,21 +184,9 @@ const ProductForm = ({ initialData, onSubmit, onCancel }: ProductFormProps) => {
           <input
             type="number"
             id="stock"
-            name="stock"
-            value={formData.stock}
-            onChange={handleInputChange}
-            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            required
-          />
-        </FormField>
-
-        <FormField label="Creation Date" id="createdAt" required>
-          <input
-            type="date"
-            id="createdAt"
-            name="createdAt"
-            value={formData.createdAt}
-            onChange={handleInputChange}
+            {...register("stock", {
+              required: "Product name is required",
+            })}
             className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             required
           />
@@ -159,23 +194,14 @@ const ProductForm = ({ initialData, onSubmit, onCancel }: ProductFormProps) => {
       </div>
 
       <FormField label="Product Images" id="images">
-        <div
-          className="border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50"
-          onClick={triggerFileInput}
-        >
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleImageChange}
-            className="hidden"
-            accept="image/*"
-            multiple
+        <div className="border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50">
+          <FileInput
+            {...register("image", {
+              required: "Product name is required",
+            })}
           />
-          <ImagePlus className="w-12 h-12 text-gray-400" />
-          <p className="mt-2 text-sm text-gray-500">Choose product images</p>
-          <p className="text-xs text-gray-400">Click to browse or drag and drop</p>
         </div>
-
+{/* 
         {previewUrls.length > 0 && (
           <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {previewUrls.map((url, index) => (
@@ -189,8 +215,8 @@ const ProductForm = ({ initialData, onSubmit, onCancel }: ProductFormProps) => {
                   type="button"
                   className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
                   onClick={(e) => {
-                    e.stopPropagation()
-                    handleRemoveImage(index)
+                    e.stopPropagation();
+                    // handleRemoveImage(index);
                   }}
                 >
                   ×
@@ -198,15 +224,15 @@ const ProductForm = ({ initialData, onSubmit, onCancel }: ProductFormProps) => {
               </div>
             ))}
           </div>
-        )}
+        )} */}
       </FormField>
 
       <FormField label="Description" id="productDescription" required>
         <textarea
           id="productDescription"
-          name="productDescription"
-          value={formData.productDescription}
-          onChange={handleInputChange}
+          {...register("productDescription", {
+            required: "Product name is required",
+          })}
           rows={5}
           className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           required
@@ -221,13 +247,15 @@ const ProductForm = ({ initialData, onSubmit, onCancel }: ProductFormProps) => {
         >
           Cancel
         </button>
-        <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+        <button
+          type="submit"
+          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+        >
           {isEditing ? "Update Product" : "Save Product"}
         </button>
       </div>
     </form>
-  )
-}
+  );
+};
 
-export default ProductForm
-
+export default ProductForm;

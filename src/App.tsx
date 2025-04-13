@@ -17,7 +17,6 @@ import MyAccountPage from "./pages/MyAccountPage";
 import OrdersListPage from "./pages/orders/OrdersListPage";
 import OrderSummaryPage from "./pages/OrderSummaryPage";
 import PaymentSuccessPage from "./pages/PaymentSuccessPage";
-import AddProductPage from "./pages/products/AddProductPage";
 import ProductDetailPage from "./pages/products/ProductDetailsPage";
 import ProductsListPage from "./pages/products/ProductsListPage";
 import RegisterPage from "./pages/auth/RegisterPage";
@@ -31,6 +30,8 @@ import AuthGuard from "./guards/AuthGuard";
 import GuestGuard from "./guards/GuestGuard";
 import RoleGuard from "./guards/RoleGuard";
 import UserRoleEnum from "./constant/userRoleEnum";
+import CategoryPage from "./pages/category";
+import CreateCategory from "./pages/category/CreateCategory";
 
 function App() {
   return (
@@ -50,29 +51,61 @@ function App() {
           {/* Product Management - Admin & Staff */}
           <Route
             element={
-              <RoleGuard allowedRoles={[UserRoleEnum.ADMIN, UserRoleEnum.STAFF]} />
+              <RoleGuard
+                allowedRoles={[UserRoleEnum.ADMIN, UserRoleEnum.STAFF]}
+              />
             }
           >
             <Route path="/dashboard/products" element={<ProductsListPage />} />
-            <Route path="/dashboard/products/add" element={<AddProductPage />} />
           </Route>
 
           {/* Order Management - Admin & Staff */}
           <Route
             element={
-              <RoleGuard allowedRoles={[UserRoleEnum.ADMIN, UserRoleEnum.STAFF]} />
+              <RoleGuard
+                allowedRoles={[UserRoleEnum.ADMIN, UserRoleEnum.STAFF]}
+              />
             }
           >
             <Route path="/dashboard/orders" element={<OrdersListPage />} />
-            <Route path="/dashboard/orders/create" element={<CreateOrderPage />} />
-            <Route path="/dashboard/orders/:id/edit" element={<EditOrderPage />} />
-            <Route path="/dashboard/orders/:id/view" element={<ViewOrderPage />} />
+            <Route
+              path="/dashboard/orders/create"
+              element={<CreateOrderPage />}
+            />
+            <Route
+              path="/dashboard/orders/:id/edit"
+              element={<EditOrderPage />}
+            />
+            <Route
+              path="/dashboard/orders/:id/view"
+              element={<ViewOrderPage />}
+            />
+          </Route>
+
+          <Route
+            element={
+              <RoleGuard
+                allowedRoles={[UserRoleEnum.ADMIN, UserRoleEnum.STAFF]}
+              />
+            }
+          >
+            <Route path="/dashboard/category" element={<CategoryPage />} />
+            <Route
+              path="/dashboard/category/create"
+              element={<CreateCategory />}
+            />
+            <Route
+              path="/dashboard/category/:id"
+              element={<CreateCategory />}
+            />
           </Route>
 
           {/* Inventory & Shipping - Admin & Staff */}
           <Route
             element={
-              <RoleGuard allowedRoles={[UserRoleEnum.ADMIN, UserRoleEnum.STAFF]} />
+              <RoleGuard
+                allowedRoles={[UserRoleEnum.ADMIN, UserRoleEnum.STAFF]}
+              />
             }
           >
             <Route path="/dashboard/inventory" element={<InventoryPage />} />
@@ -82,18 +115,16 @@ function App() {
           {/* Company Page - Admin & Company */}
           <Route
             element={
-              <RoleGuard allowedRoles={[UserRoleEnum.ADMIN, UserRoleEnum.COMPANY]} />
+              <RoleGuard
+                allowedRoles={[UserRoleEnum.ADMIN, UserRoleEnum.COMPANY]}
+              />
             }
           >
             <Route path="/dashboard/company" element={<CompanyPage />} />
           </Route>
 
           {/* Users & Reports - Admin Only */}
-          <Route
-            element={
-              <RoleGuard allowedRoles={[UserRoleEnum.ADMIN]} />
-            }
-          >
+          <Route element={<RoleGuard allowedRoles={[UserRoleEnum.ADMIN]} />}>
             <Route path="/dashboard/users" element={<UsersPage />} />
             <Route path="/dashboard/reports" element={<ReportsPage />} />
           </Route>

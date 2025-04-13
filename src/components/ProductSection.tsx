@@ -1,22 +1,18 @@
-import { Link } from "react-router-dom"
-import ProductCard from "./ProductCard"
-
-interface Product {
-  id: number
-  title: string
-  price: number
-  originalPrice?: number
-  discountPercentage?: number
-  imageUrl: string
-}
+import { Link } from "react-router-dom";
+import ProductCard from "./ProductCard";
+import IProduct from "../types/IProduct";
+import { useAppDispatch } from "../store/store";
+import { addToCart } from "../store/slice/cartSlice";
 
 interface ProductSectionProps {
-  title: string
-  subtitle?: string
-  products: Product[]
+  title: string;
+  subtitle?: string;
+  products: IProduct[];
 }
 
 const ProductSection = ({ title, subtitle, products }: ProductSectionProps) => {
+  const dispatch = useAppDispatch();
+
   return (
     <section className="py-10 md:py-16">
       <div className="container">
@@ -32,20 +28,22 @@ const ProductSection = ({ title, subtitle, products }: ProductSectionProps) => {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6">
           {products.map((product) => (
             <ProductCard
-              key={product.id}
-              id={product.id}
-              title={product.title}
-              price={product.price}
-              originalPrice={product.originalPrice}
-              discountPercentage={product.discountPercentage}
-              imageUrl={product.imageUrl}
+              key={product._id}
+              id={+product._id!}
+              title={product.productName}
+              price={+product.price!}
+              originalPrice={product.price}
+              discountPercentage={product.price}
+              imageUrl={product.imageURL || ""}
+              handleAddToCart={() => {
+                dispatch(addToCart(product));
+              }}
             />
           ))}
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default ProductSection
-
+export default ProductSection;

@@ -1,9 +1,12 @@
 import { Link } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
 import useAuth from "../../hooks/useAuth";
+import { useAppSelector } from "../../store/store";
+import { getAllCartItems } from "../../store/selectors/cartSelector";
 
 const Header = () => {
   const { isAuth } = useAuth();
+  const cart = useAppSelector(getAllCartItems);
 
   return (
     <header className="py-4 w-full m-auto">
@@ -54,7 +57,7 @@ const Header = () => {
           <Link to="/cart" className="flex items-center gap-1.5 text-sm">
             <ShoppingCart size={20} />
             <span>YOUR CART</span>
-            <span className="text-muted">(2)</span>
+            <span className="text-muted">({cart.length})</span>
           </Link>
         </nav>
       </div>

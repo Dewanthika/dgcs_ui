@@ -1,25 +1,27 @@
-import { Link } from "react-router-dom"
+import { Link } from "react-router-dom";
+import useAuth from "../hooks/useAuth";
 
 const Hero = () => {
+  const { isAuth } = useAuth();
   return (
-    <section className="bg-secondary text-white py-16 md:py-24">
-      <div className="container text-center">
-        <div className="max-w-2xl mx-auto space-y-6">
-          <h1 className="text-4xl md:text-5xl font-bold">Build better fronted</h1>
-          <p className="text-base md:text-lg">
-            At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti
-            atque corrupti quos dolores et quas molestias.
-          </p>
-          <div>
-            <Link to="/signup" className="btn btn-primary">
+    <section
+      className="bg-secondary text-black py-16 md:py-24 bg-cover bg-center h-[400px]"
+      style={{ backgroundImage: "url('/HeroImage1.webp')" }}
+    >
+      <div className="max-w-2xl mx-auto space-y-6">
+        <div>
+          {!isAuth && (
+            <Link
+              to="/signup"
+              className="btn btn-primary bg-black text-white py-2 px-5"
+            >
               SIGN-UP
             </Link>
-          </div>
+          )}
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default Hero
-
+export default Hero;

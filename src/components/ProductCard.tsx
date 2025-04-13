@@ -1,30 +1,35 @@
-"use client"
-
-import type React from "react"
-
-import { Link } from "react-router-dom"
+import { Link } from "react-router-dom";
 
 interface ProductCardProps {
-  id: number
-  title: string
-  price: number
-  originalPrice?: number
-  discountPercentage?: number
-  imageUrl: string
+  id: number;
+  title: string;
+  price: number;
+  originalPrice?: number;
+  discountPercentage?: number;
+  imageUrl: string;
+  handleAddToCart: () => void;
 }
 
-const ProductCard = ({ id, title, price, originalPrice, discountPercentage, imageUrl }: ProductCardProps) => {
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault() // Prevent navigation when clicking the button
-    e.stopPropagation() // Stop event propagation
-    console.log(`Added product ${id} to cart`)
-    // Implement add to cart functionality
-  }
-
+const ProductCard = ({
+  id,
+  title,
+  price,
+  originalPrice,
+  discountPercentage,
+  imageUrl,
+  handleAddToCart,
+}: ProductCardProps) => {
   return (
     <div className="bg-white rounded overflow-hidden shadow-sm transition-transform hover:shadow-md hover:-translate-y-1">
-      <Link to={`/product/${id}`} className="block h-48 bg-gray-200 flex items-center justify-center">
-        <img src={imageUrl || "/placeholder.svg"} alt={title} className="max-h-full object-contain" />
+      <Link
+        to={`/product/${id}`}
+        className="block h-48 bg-gray-200 flex items-center justify-center"
+      >
+        <img
+          src={imageUrl || "/placeholder.svg"}
+          alt={title}
+          className="max-h-full object-contain"
+        />
       </Link>
       <div className="p-4 space-y-3">
         <Link to={`/product/${id}`} className="font-medium hover:underline">
@@ -35,8 +40,14 @@ const ProductCard = ({ id, title, price, originalPrice, discountPercentage, imag
           {originalPrice ? (
             <div className="space-y-1">
               <div className="font-bold">Now LKR {price}</div>
-              <div className="text-xs text-gray-500 line-through">Was LKR {originalPrice}</div>
-              {discountPercentage && <span className="text-xs text-danger font-medium">(-{discountPercentage}%)</span>}
+              <div className="text-xs text-gray-500 line-through">
+                Was LKR {originalPrice}
+              </div>
+              {discountPercentage && (
+                <span className="text-xs text-danger font-medium">
+                  (-{discountPercentage}%)
+                </span>
+              )}
             </div>
           ) : (
             <div className="font-bold">LKR {price}</div>
@@ -50,8 +61,7 @@ const ProductCard = ({ id, title, price, originalPrice, discountPercentage, imag
         </button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ProductCard
-
+export default ProductCard;

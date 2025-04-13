@@ -6,7 +6,7 @@ import authAxiosInstance from "../helpers/authHelper";
 import { handleAxiosError } from "../helpers/axiosHelper";
 import { isValidToken } from "../helpers/generalHelper";
 import useLocalStorage from "../hooks/useLocalStorage";
-import { fetchUserByEmail } from "../store/silces/userSlice";
+import { fetchUserByEmail } from "../store/slice/userSlice";
 import { useAppDispatch } from "../store/store";
 import ISigninInputs from "../types/ISigninInputs";
 
