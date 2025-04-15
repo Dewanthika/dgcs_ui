@@ -10,7 +10,6 @@ import CreateOrderPage from "./pages/CreateOrderPage";
 import CustomerOrderViewPage from "./pages/CustomerOrderViewPage";
 import EditOrderPage from "./pages/EditOrderPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
-import HomePage from "./pages/HomePage";
 import InventoryPage from "./pages/inventory/InventoryPage";
 import LoginPage from "./pages/auth/LoginPage";
 import MyAccountPage from "./pages/MyAccountPage";
@@ -22,7 +21,6 @@ import ProductsListPage from "./pages/products/ProductsListPage";
 import RegisterPage from "./pages/auth/RegisterPage";
 import ReportsPage from "./pages/ReportsPage";
 import ShippingPage from "./pages/ShippingPage";
-import ShopPage from "./pages/ShopPage";
 import UsersPage from "./pages/users/UsersPage";
 import ViewOrderPage from "./pages/ViewOrderPage";
 
@@ -32,6 +30,8 @@ import RoleGuard from "./guards/RoleGuard";
 import UserRoleEnum from "./constant/userRoleEnum";
 import CategoryPage from "./pages/category";
 import CreateCategory from "./pages/category/CreateCategory";
+import ShopPage from "./pages/shop/ShopPage";
+import HomePage from "./pages/home/HomePage";
 
 function App() {
   return (

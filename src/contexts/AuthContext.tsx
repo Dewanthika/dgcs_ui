@@ -9,6 +9,7 @@ import useLocalStorage from "../hooks/useLocalStorage";
 import { fetchUserByEmail } from "../store/slice/userSlice";
 import { useAppDispatch } from "../store/store";
 import ISigninInputs from "../types/ISigninInputs";
+import IUser from "../types/IUser";
 
 interface IAuthContextProps {
   children: ReactNode;
@@ -21,6 +22,7 @@ interface IAuthProvider {
   setErrorMessage: (value: string) => void;
   signin: (value: ISigninInputs) => Promise<void>;
   signout: () => void;
+  signup: (value: IUser) => Promise<void>;
 }
 
 interface ILoginResponse {
@@ -84,6 +86,65 @@ const AuthContext = ({ children }: IAuthContextProps) => {
     redirect(PathsEnum.LOGIN);
   };
 
+  const signup = async (data: IUser) => {
+    try {
+      setLoading(true);
+      const formData = new FormData();
+
+      // Append form data only if they exist
+      formData.append("fName", data.fName);
+      formData.append("lName", data.lName);
+      formData.append("email", data.email);
+      formData.append("phone", data.phone);
+      formData.append("DOB", data.DOB);
+      formData.append("address", data.address);
+      formData.append("city", data.city);
+      formData.append("district", data.district);
+      formData.append("postal_code", data.postal_code);
+      formData.append("userType", data.userType);
+      formData.append("status", data.status);
+      formData.append("password", data.password);
+
+      if (data.passwordConfirm) delete data.passwordConfirm;
+      if (data.companyName) formData.append("companyName", data.companyName);
+      if (data.businessRegNo)
+        formData.append("businessRegNo", data.businessRegNo);
+      if (data.contactPerson)
+        formData.append("contactPerson", data.contactPerson);
+
+      if (data.businessRegImage) {
+        let value: File | string | undefined;
+        if (data.businessRegImage && data.businessRegImage.length > 0) {
+          value = data.businessRegImage[0];
+        } else {
+          value = data.businessRegImage;
+        }
+        formData.append("file", value);
+      }
+
+      // Make a POST request to the register endpoint
+      const response = await authAxiosInstance.post(
+        PathsEnum.REGISTER,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log("User registered successfully", response.data);
+      onSuccess(response.data.accessToken, data.email);
+    } catch (error) {
+      console.error("Signup failed", error);
+      setErrorMessage(
+        handleAxiosError(error as string) || "An unknown error occurred."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!isValidToken(storedValue)) {
       signout();
@@ -106,6 +167,7 @@ const AuthContext = ({ children }: IAuthContextProps) => {
         setErrorMessage,
         signin,
         signout,
+        signup,
       }}
     >
       {children}
@@ -114,4 +176,3 @@ const AuthContext = ({ children }: IAuthContextProps) => {
 };
 
 export { AuthContext, AuthProvider };
-

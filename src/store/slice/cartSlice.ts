@@ -7,10 +7,14 @@ interface CartItem extends IProduct {
 
 interface CartState {
   items: CartItem[];
+  isBulkOrder: boolean;
+  isCredit: boolean;
 }
 
 const initialState: CartState = {
   items: [],
+  isBulkOrder: false,
+  isCredit: false,
 };
 
 const cartSlice = createSlice({
@@ -40,13 +44,26 @@ const cartSlice = createSlice({
         item.quantity = action.payload.quantity;
       }
     },
+    updateBulkOrder: (state, action: PayloadAction<boolean>) => {
+      state.isBulkOrder = action.payload;
+    },
+
+    updateCreditOrder: (state, action: PayloadAction<boolean>) => {
+      state.isCredit = action.payload;
+    },
     clearCart: (state) => {
       state.items = [];
     },
   },
 });
 
-export const { addToCart, removeFromCart, updateQuantity, clearCart } =
-  cartSlice.actions;
+export const {
+  addToCart,
+  removeFromCart,
+  updateQuantity,
+  clearCart,
+  updateBulkOrder,
+  updateCreditOrder,
+} = cartSlice.actions;
 
 export default cartSlice.reducer;

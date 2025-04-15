@@ -1,36 +1,25 @@
-import type React from "react"
-
-import { useState } from "react"
-import { Link } from "react-router-dom"
-import { ChevronDown } from "lucide-react"
+import { useForm, useWatch } from "react-hook-form";
+import { Link } from "react-router-dom";
+import FormField from "../../components/ui/FormField";
+import useAuth from "../../hooks/useAuth";
+import IUser from "../../types/IUser";
+import UserRoleEnum from "../../constant/userRoleEnum";
 
 const RegisterPage = () => {
-  const [formData, setFormData] = useState({
-    customerType: "",
-    firstName: "",
-    lastName: "",
-    address: "",
-    postalCode: "",
-    street: "",
-    contact: "",
-    dateOfBirth: "",
-    password: "",
-    confirmPassword: "",
-  })
+  const { signup, isLoading } = useAuth();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
-  }
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm<IUser>();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log("Registration data:", formData)
-    // Implement registration functionality
-  }
+  const userRole = useWatch({ control, name: "userType" });
+
+  const onSubmit = (data: IUser) => {
+    signup(data);
+  };
 
   return (
     <div className="flex min-h-screen">
@@ -41,182 +30,198 @@ const RegisterPage = () => {
             <h1 className="text-4xl font-bold">Logo</h1>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Customer Type */}
             <div className="space-y-2">
-              <label htmlFor="customerType" className="block text-sm text-gray-600">
-                Customer Type
-              </label>
-              <div className="relative">
+              <FormField label="User Role" id="userRole" required>
                 <select
-                  id="customerType"
-                  name="customerType"
-                  value={formData.customerType}
-                  onChange={handleChange}
-                  className="w-full border-b border-gray-300 py-2 pr-8 appearance-none focus:outline-none focus:border-black bg-transparent"
+                  {...register("userType")}
+                  className="w-full p-2 border border-gray-300 rounded-md"
                 >
-                  <option value="" disabled>
-                    Type
-                  </option>
-                  <option value="individual">Individual</option>
-                  <option value="business">Business</option>
+                  <option value="Admin">Admin</option>
+                  <option value="Staff">Staff</option>
+                  <option value="Individual">Individual Customer</option>
+                  <option value="Company">Company Customer</option>
                 </select>
-                <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-5 h-5 pointer-events-none" />
-              </div>
+              </FormField>
             </div>
+
+            {userRole?.toLowerCase() === UserRoleEnum.COMPANY.toLowerCase() && (
+              <div className="space-y-4">
+                <FormField label="Company Name" id="companyName" required>
+                  <input
+                    {...register("companyName", {
+                      required: "Company name is required",
+                    })}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  />
+                </FormField>
+
+                <FormField
+                  label="Business Registration Number"
+                  id="businessRegNo"
+                  required
+                >
+                  <input
+                    {...register("businessRegNo", {
+                      required: "Business reg. number is required",
+                    })}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  />
+                </FormField>
+                <input
+                  type="file"
+                  accept="image/*"
+                  {...register("businessRegImage", {
+                    required: "Image is required",
+                  })}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+              </div>
+            )}
 
             {/* First Name */}
             <div className="space-y-2">
-              <label htmlFor="firstName" className="block text-sm text-gray-600">
-                First Name
-              </label>
-              <input
-                type="text"
-                id="firstName"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                className="w-full border-b border-gray-300 py-2 focus:outline-none focus:border-black"
-                placeholder="First Name"
-                required
-              />
+              <FormField label="First Name" id="fname" required>
+                <input
+                  {...register("fName", { required: "First name is required" })}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+                {errors.fName && (
+                  <p className="text-red-500">{errors.fName.message}</p>
+                )}
+              </FormField>
             </div>
 
             {/* Last Name */}
             <div className="space-y-2">
-              <label htmlFor="lastName" className="block text-sm text-gray-600">
-                Last Name
-              </label>
-              <input
-                type="text"
-                id="lastName"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                className="w-full border-b border-gray-300 py-2 focus:outline-none focus:border-black"
-                placeholder="Last Name"
-                required
-              />
+              <FormField label="Last Name" id="lname" required>
+                <input
+                  {...register("lName", { required: "Last name is required" })}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+                {errors.lName && (
+                  <p className="text-red-500">{errors.lName.message}</p>
+                )}
+              </FormField>
+            </div>
+
+            <div className="space-y-2">
+              <FormField label="Email" id="email" required>
+                <input
+                  {...register("email", { required: "Email is required" })}
+                  type="email"
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+                {errors.email && (
+                  <p className="text-red-500">{errors.email.message}</p>
+                )}
+              </FormField>
+              <FormField label="Phone" id="phone" required>
+                <input
+                  {...register("phone", {
+                    required: "Phone number is required",
+                  })}
+                  type="tel"
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+                {errors.phone && (
+                  <p className="text-red-500">{errors.phone.message}</p>
+                )}
+              </FormField>
+            </div>
+            <div>
+              <FormField label="Date of Birth" id="dob" required>
+                <input
+                  {...register("DOB", {
+                    required: "Date of birth is required",
+                  })}
+                  type="date"
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                />
+                {errors.DOB && (
+                  <p className="text-red-500">{errors.DOB.message}</p>
+                )}
+              </FormField>
             </div>
 
             {/* Address Fields */}
+            <FormField label="Address" id="address" required>
+              <input
+                {...register("address", { required: "Address is required" })}
+                className="w-full p-2 border border-gray-300 rounded-md"
+              />
+              {errors.address && (
+                <p className="text-red-500">{errors.address.message}</p>
+              )}
+            </FormField>
             <div className="grid grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <label htmlFor="address" className="block text-sm text-gray-600">
-                  Address
-                </label>
+              <FormField label="City" id="city" required>
                 <input
-                  type="text"
-                  id="address"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  className="w-full border-b border-gray-300 py-2 focus:outline-none focus:border-black"
-                  required
+                  {...register("city", { required: "City is required" })}
+                  className="w-full p-2 border border-gray-300 rounded-md"
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <label htmlFor="postalCode" className="block text-sm text-gray-600">
-                  Postal Code
-                </label>
+              <FormField label="District" id="district" required>
                 <input
-                  type="text"
-                  id="postalCode"
-                  name="postalCode"
-                  value={formData.postalCode}
-                  onChange={handleChange}
-                  className="w-full border-b border-gray-300 py-2 focus:outline-none focus:border-black"
-                  required
+                  {...register("district", {
+                    required: "District is required",
+                  })}
+                  className="w-full p-2 border border-gray-300 rounded-md"
                 />
-              </div>
+              </FormField>
 
-              <div className="space-y-2">
-                <label htmlFor="street" className="block text-sm text-gray-600">
-                  Street
-                </label>
+              <FormField label="Postal Code" id="postal_code" required>
                 <input
-                  type="text"
-                  id="street"
-                  name="street"
-                  value={formData.street}
-                  onChange={handleChange}
-                  className="w-full border-b border-gray-300 py-2 focus:outline-none focus:border-black"
-                  required
+                  {...register("postal_code", {
+                    required: "Postal code is required",
+                  })}
+                  className="w-full p-2 border border-gray-300 rounded-md"
                 />
-              </div>
+              </FormField>
             </div>
 
-            {/* Contact */}
-            <div className="space-y-2">
-              <label htmlFor="contact" className="block text-sm text-gray-600">
-                Contact
-              </label>
-              <input
-                type="tel"
-                id="contact"
-                name="contact"
-                value={formData.contact}
-                onChange={handleChange}
-                className="w-full border-b border-gray-300 py-2 focus:outline-none focus:border-black"
-                placeholder="Contact"
-                required
-              />
-            </div>
-
-            {/* Date of Birth */}
-            <div className="space-y-2">
-              <label htmlFor="dateOfBirth" className="block text-sm text-gray-600">
-                Date of Birth
-              </label>
-              <input
-                type="date"
-                id="dateOfBirth"
-                name="dateOfBirth"
-                value={formData.dateOfBirth}
-                onChange={handleChange}
-                className="w-full border-b border-gray-300 py-2 focus:outline-none focus:border-black"
-                placeholder="Date"
-                required
-              />
+            <div>
+              <FormField label="Status" id="status" required>
+                <select
+                  {...register("status")}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="pending">Pending</option>
+                </select>
+              </FormField>
             </div>
 
             {/* Password */}
-            <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm text-gray-600">
-                Password
-              </label>
+            <FormField label="Password" id="password" required>
               <input
+                {...register("password", {
+                  required: "Password is required",
+                })}
                 type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full border-b border-gray-300 py-2 focus:outline-none focus:border-black"
-                placeholder="Password"
-                required
+                className="w-full p-2 border border-gray-300 rounded-md"
               />
-            </div>
+            </FormField>
 
-            {/* Confirm Password */}
-            <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="block text-sm text-gray-600">
-                Confirm Password
-              </label>
+            <FormField label="Confirm Password" id="passwordConfirm" required>
               <input
+                {...register("passwordConfirm", {
+                  required: "Confirm password",
+                })}
                 type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="w-full border-b border-gray-300 py-2 focus:outline-none focus:border-black"
-                placeholder="Confirm Password"
-                required
+                className="w-full p-2 border border-gray-300 rounded-md"
               />
-            </div>
+            </FormField>
 
             <div className="pt-4">
-              <button type="submit" className="w-full bg-black text-white py-3 font-medium uppercase">
+              <button
+                type="submit"
+                className="w-full bg-black text-white py-3 font-medium uppercase"
+                disabled={isLoading}
+              >
                 REGISTER
               </button>
             </div>
@@ -224,7 +229,10 @@ const RegisterPage = () => {
             <div className="text-center">
               <p className="text-sm text-gray-600">
                 Already have an account?{" "}
-                <Link to="/login" className="text-black font-medium hover:underline">
+                <Link
+                  to="/login"
+                  className="text-black font-medium hover:underline"
+                >
                   Login
                 </Link>
               </p>
@@ -236,12 +244,15 @@ const RegisterPage = () => {
       {/* Right side - Image */}
       <div className="hidden lg:block lg:w-1/2 bg-gray-300">
         <div className="h-full flex items-center justify-center">
-          <img src="/placeholder.svg?height=400&width=400" alt="Register" className="max-w-md" />
+          <img
+            src="/placeholder.svg?height=400&width=400"
+            alt="Register"
+            className="max-w-md"
+          />
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default RegisterPage
-
+export default RegisterPage;

@@ -1,31 +1,49 @@
-import type React from "react";
-
-import { useState } from "react";
+import { Minus, Plus, Trash2 } from "lucide-react";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronDown, Minus, Plus, Trash2 } from "lucide-react";
+import { io } from "socket.io-client";
+import FormField from "../../components/ui/FormField";
+import UserRoleEnum from "../../constant/userRoleEnum";
+import {
+  getAllCartItems,
+  getCartDetail,
+} from "../../store/selectors/cartSelector";
+import { getProfile } from "../../store/selectors/userSelector";
+import {
+  removeFromCart,
+  updateCreditOrder,
+  updateQuantity,
+} from "../../store/slice/cartSlice";
 import { useAppDispatch, useAppSelector } from "../../store/store";
-import { getAllCartItems } from "../../store/selectors/cartSelector";
-import { removeFromCart, updateQuantity } from "../../store/slice/cartSlice";
+import appFetch from "../../utils/appFetch";
+
+const socket = io("http://localhost:8080/order", {
+  withCredentials: true,
+});
+
+// Define the FormData type with deliveryAddress
+interface FormData {
+  deliveryAddress: {
+    city: string;
+    state: string;
+    street: string;
+    zip: string;
+  };
+}
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
-
-  // Form state
-  const [formData, setFormData] = useState({
-    email: "",
-    firstName: "",
-    lastName: "",
-    address: "",
-    apartment: "",
-    city: "",
-    state: "",
-    postalCode: "",
-    phone: "",
-    saveInformation: false,
-  });
+  const profile = useAppSelector(getProfile);
 
   const cartItems = useAppSelector(getAllCartItems);
+  const { isBulkOrder, isCredit } = useAppSelector(getCartDetail);
   const dispatch = useAppDispatch();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>();
 
   // Calculate totals
   const subtotal = cartItems.reduce(
@@ -34,22 +52,6 @@ const CheckoutPage = () => {
   );
   const shipping = 300;
   const total = subtotal + shipping;
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
-  };
-
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
 
   const handleQuantityChange = (id: string, newQuantity: number) => {
     if (newQuantity < 1) return; // Prevents negative quantity
@@ -60,13 +62,70 @@ const CheckoutPage = () => {
     dispatch(removeFromCart(id));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Checkout form submitted:", formData);
-    console.log("Cart items:", cartItems);
-    // In a real app, you would process the payment here
-    // For now, we'll just navigate to the success page
-    navigate("/payment-success");
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
+    const orderWeight = cartItems.reduce(
+      (total, item) => total + (item.weight || 0) * item.quantity,
+      0
+    );
+
+    const formData = {
+      orderDate: new Date(),
+      userID: profile?._id || "",
+      items: cartItems
+        .filter((item) => item._id)
+        .map((item) => ({
+          product: item._id as string,
+          quantity: item.quantity,
+          unitPrice: item.price ?? 0,
+        })),
+      orderType: "instore",
+      deliveryAddress: {
+        city: data.deliveryAddress.city,
+        state: data.deliveryAddress.state,
+        street: data.deliveryAddress.street,
+        zip: data.deliveryAddress.zip,
+      },
+      isApproved: false,
+      isBulkOrder,
+      isCredit,
+      orderWeight,
+      deliveryCharge: 0,
+      orderStatus: "",
+      totalAmount: total,
+      paymentMethod: "",
+    };
+
+    try {
+      // 1. Create checkout session
+      if (isCredit) {
+        socket.emit("createOrder", formData);
+        setTimeout(() => {
+          navigate("/");
+        }, 1000);
+        return;
+      }
+      const checkoutSession = await appFetch<{ url: string }>({
+        url: "/orders/checkout-session",
+        method: "post",
+        data: {
+          items: cartItems.map((item) => ({
+            quantity: item.quantity,
+            unitPrice: item.price,
+            product: item._id,
+          })),
+          customerEmail: profile?.email,
+          formData: data,
+        },
+      });
+
+      // 2. Redirect to Stripe Checkout
+      window.location.href = checkoutSession.url;
+      return;
+    } catch (error) {
+      console.error("Checkout Error:", error);
+    }
+
+    return;
   };
 
   const handleReturnToCart = () => {
@@ -78,148 +137,85 @@ const CheckoutPage = () => {
       <div className="grid md:grid-cols-5 gap-8">
         {/* Left Column - Checkout Form */}
         <div className="md:col-span-3">
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             {/* Contact Information */}
-            <div className="mb-6">
-              <h2 className="text-lg font-medium mb-4">Contact information</h2>
-              <div>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  placeholder="Email"
-                  className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:border-black"
-                  required
-                />
-              </div>
-            </div>
 
             {/* Shipping Address */}
             <div className="mb-6">
               <h2 className="text-lg font-medium mb-4">Shipping address</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <input
-                  type="text"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                  placeholder="First Name"
-                  className="border border-gray-300 rounded px-4 py-2 focus:outline-none focus:border-black"
-                  required
-                />
-                <input
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                  placeholder="Last Name"
-                  className="border border-gray-300 rounded px-4 py-2 focus:outline-none focus:border-black"
-                  required
-                />
-              </div>
-
-              <div className="space-y-4">
-                <input
-                  type="text"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  placeholder="Address"
-                  className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:border-black"
-                  required
-                />
-
-                <input
-                  type="text"
-                  name="apartment"
-                  value={formData.apartment}
-                  onChange={handleInputChange}
-                  placeholder="Apartment, suite, etc. (optional)"
-                  className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:border-black"
-                />
-
-                <input
-                  type="text"
-                  name="city"
-                  value={formData.city}
-                  onChange={handleInputChange}
-                  placeholder="City"
-                  className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:border-black"
-                  required
-                />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="relative">
-                    <select
-                      name="state"
-                      value={formData.state}
-                      onChange={handleSelectChange}
-                      className="w-full border border-gray-300 rounded px-4 py-2 appearance-none focus:outline-none focus:border-black"
-                      required
-                    >
-                      <option value="" disabled>
-                        State
-                      </option>
-                      <option value="central">Central</option>
-                      <option value="eastern">Eastern</option>
-                      <option value="north-central">North Central</option>
-                      <option value="northern">Northern</option>
-                      <option value="north-western">North Western</option>
-                      <option value="sabaragamuwa">Sabaragamuwa</option>
-                      <option value="southern">Southern</option>
-                      <option value="uva">Uva</option>
-                      <option value="western">Western</option>
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 pointer-events-none text-gray-500" />
-                  </div>
-
-                  <div className="relative">
-                    <select
-                      name="postalCode"
-                      value={formData.postalCode}
-                      onChange={handleSelectChange}
-                      className="w-full border border-gray-300 rounded px-4 py-2 appearance-none focus:outline-none focus:border-black"
-                      required
-                    >
-                      <option value="" disabled>
-                        Postal code
-                      </option>
-                      <option value="10000">10000 - Colombo</option>
-                      <option value="20000">20000 - Gampaha</option>
-                      <option value="30000">30000 - Kalutara</option>
-                      <option value="40000">40000 - Kandy</option>
-                      <option value="50000">50000 - Matale</option>
-                    </select>
-                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 pointer-events-none text-gray-500" />
-                  </div>
-                </div>
-
-                <input
-                  type="tel"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  placeholder="Phone"
-                  className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:border-black"
-                  required
-                />
+                <FormField label="City" id="city" required>
+                  <input
+                    {...register("deliveryAddress.city", {
+                      required: "City is required",
+                    })}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  />
+                  {errors.deliveryAddress?.city && (
+                    <p className="text-red-500">
+                      {errors.deliveryAddress?.city.message}
+                    </p>
+                  )}
+                </FormField>
+                <FormField label="State" id="state" required>
+                  <input
+                    {...register("deliveryAddress.state", {
+                      required: "First name is required",
+                    })}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  />
+                  {errors.deliveryAddress?.state && (
+                    <p className="text-red-500">
+                      {errors.deliveryAddress?.state.message}
+                    </p>
+                  )}
+                </FormField>
+                <FormField label="Street" id="street" required>
+                  <input
+                    {...register("deliveryAddress.street", {
+                      required: "First name is required",
+                    })}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  />
+                  {errors.deliveryAddress?.street && (
+                    <p className="text-red-500">
+                      {errors.deliveryAddress?.street.message}
+                    </p>
+                  )}
+                </FormField>
+                <FormField label="Zip Code" id="zip" required>
+                  <input
+                    {...register("deliveryAddress.zip", {
+                      required: "First name is required",
+                    })}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  />
+                  {errors.deliveryAddress?.zip && (
+                    <p className="text-red-500">
+                      {errors.deliveryAddress?.zip.message}
+                    </p>
+                  )}
+                </FormField>
               </div>
             </div>
 
             {/* Save Information Checkbox */}
-            <div className="mb-8">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  name="saveInformation"
-                  checked={formData.saveInformation}
-                  onChange={handleInputChange}
-                  className="mr-2"
-                />
-                <span>Save this information</span>
-              </label>
-            </div>
+            {profile?.userType !== UserRoleEnum.INDIVIDUAL && (
+              <div className="mb-8">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    name="isCredit"
+                    checked={isCredit}
+                    onChange={(e) =>
+                      dispatch(updateCreditOrder(e.target.checked))
+                    }
+                    className="mr-2"
+                  />
+                  <span>Make this Credit Purchase</span>
+                </label>
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="flex justify-between">
@@ -273,29 +269,40 @@ const CheckoutPage = () => {
                     <h3 className="font-medium">{item.productName}</h3>
 
                     <div className="flex items-center mt-2">
-                      <div className="flex items-center border rounded-md">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleQuantityChange(item._id!, item.quantity - 1)
+                      {isBulkOrder ? (
+                        <input
+                          placeholder="QTY"
+                          className="px-4 py-1 border rounded-md"
+                          value={item.quantity}
+                          onChange={(e) =>
+                            handleQuantityChange(item._id!, +e.target.value)
                           }
-                          className="px-2 py-0.5"
-                          aria-label="Decrease quantity"
-                        >
-                          <Minus size={14} />
-                        </button>
-                        <span className="px-3 py-0.5">{item.quantity}</span>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleQuantityChange(item._id!, item.quantity + 1)
-                          }
-                          className="px-2 py-0.5"
-                          aria-label="Increase quantity"
-                        >
-                          <Plus size={14} />
-                        </button>
-                      </div>
+                        />
+                      ) : (
+                        <div className="flex items-center border rounded-md">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleQuantityChange(item._id!, item.quantity - 1)
+                            }
+                            className="px-2 py-0.5"
+                            aria-label="Decrease quantity"
+                          >
+                            <Minus size={14} />
+                          </button>
+                          <span className="px-3 py-0.5">{item.quantity}</span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleQuantityChange(item._id!, item.quantity + 1)
+                            }
+                            className="px-2 py-0.5"
+                            aria-label="Increase quantity"
+                          >
+                            <Plus size={14} />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
 

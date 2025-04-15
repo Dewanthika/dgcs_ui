@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 interface ProductCardProps {
-  id: number;
+  id: string;
   title: string;
   price: number;
   originalPrice?: number;

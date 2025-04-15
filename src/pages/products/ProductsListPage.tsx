@@ -1,62 +1,14 @@
 import { UserPlus } from "lucide-react";
-import { useEffect, useState } from "react";
-import { io } from "socket.io-client";
+import { useState } from "react";
 import DataTable from "../../components/tables/DataTable";
 import Modal from "../../components/ui/Modal";
 import PageHeader from "../../components/ui/PageHeader";
 import ProductForm from "../../features/products/ProductForm";
-import IProduct from "../../types/IProduct";
-
-// Socket connection to the WebSocket server
-const socket = io("http://localhost:8080/products", {
-  withCredentials: true,
-  transports: ["websocket"],
-});
+import useGetAllProduct from "../../hooks/useGetAllProduct";
 
 const ProductsListPage = () => {
   const [showAddUserModal, setShowAddUserModal] = useState(false);
-  const [products, setProducts] = useState<IProduct[]>([]);
-
-  useEffect(() => {
-    // Ensure the socket connection is open
-    socket.on("connect", () => {
-      console.log("Connected to WebSocket server");
-    });
-
-    socket.emit("findAllProduct");
-
-    // Listen for the response when fetching all products
-    socket.on("findAllProduct", (response) => {
-      if (response) {
-        setProducts(response);
-      } else {
-        // Handle error case
-        console.error("Socket error:", response.error);
-      }
-      // setIsLoading(false);
-    });
-
-    // Listen for product updates and update the list when a product is updated
-    socket.on("productUpdated", (updatedProduct) => {
-      if (updatedProduct) {
-        setProducts((prevProducts) =>
-          prevProducts.map((product) =>
-            product._id === updatedProduct._id
-              ? { ...product, ...updatedProduct }
-              : product
-          )
-        );
-      } else {
-        console.error("Error: productUpdated event received without data.");
-      }
-    });
-
-    // Cleanup on unmount
-    return () => {
-      socket.off("findAllProduct");
-      socket.off("productUpdated"); // Remove the event listener for product updates
-    };
-  }, []);
+  const products = useGetAllProduct();
 
   return (
     <>

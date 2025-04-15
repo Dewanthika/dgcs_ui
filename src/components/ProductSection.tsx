@@ -4,13 +4,13 @@ import IProduct from "../types/IProduct";
 import { useAppDispatch } from "../store/store";
 import { addToCart } from "../store/slice/cartSlice";
 
-interface ProductSectionProps {
+interface IProductSectionProps {
   title: string;
   subtitle?: string;
   products: IProduct[];
 }
 
-const ProductSection = ({ title, subtitle, products }: ProductSectionProps) => {
+const ProductSection = ({ title, subtitle, products }: IProductSectionProps) => {
   const dispatch = useAppDispatch();
 
   return (
@@ -29,7 +29,7 @@ const ProductSection = ({ title, subtitle, products }: ProductSectionProps) => {
           {products.map((product) => (
             <ProductCard
               key={product._id}
-              id={+product._id!}
+              id={product._id!}
               title={product.productName}
               price={+product.price!}
               originalPrice={product.price}

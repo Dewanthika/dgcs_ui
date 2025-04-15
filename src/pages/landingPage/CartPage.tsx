@@ -1,30 +1,33 @@
-import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import { Minus, Plus, Trash2 } from "lucide-react"
-import { useAppDispatch, useAppSelector } from "../../store/store"
-import { getAllCartItems } from "../../store/selectors/cartSelector"
-import { removeFromCart, updateQuantity } from "../../store/slice/cartSlice"
-
-interface CartItem {
-  id: number
-  title: string
-  price: number
-  quantity: number
-  imageUrl: string
-}
+import { Minus, Plus, Trash2 } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  getAllCartItems,
+  getCartDetail,
+} from "../../store/selectors/cartSelector";
+import {
+  removeFromCart,
+  updateBulkOrder,
+  updateQuantity,
+} from "../../store/slice/cartSlice";
+import { useAppDispatch, useAppSelector } from "../../store/store";
+import { getProfile } from "../../store/selectors/userSelector";
+import UserRoleEnum from "../../constant/userRoleEnum";
 
 const CartPage = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const profile = useAppSelector(getProfile);
   const cartItems = useAppSelector(getAllCartItems);
-  const dispatch = useAppDispatch()
-
-  const [couponCode, setCouponCode] = useState("")
+  const { isBulkOrder } = useAppSelector(getCartDetail);
+  const dispatch = useAppDispatch();
 
   // Calculate cart totals
-  const subtotal = cartItems.reduce((total, item) => total + (item?.price ?? 0) * item.quantity, 0)
-  const shipping = 466
-  const discount = 120
-  const total = subtotal + shipping - discount
+  const subtotal = cartItems.reduce(
+    (total, item) => total + (item?.price ?? 0) * item.quantity,
+    0
+  );
+  const shipping = 466;
+  const discount = 120;
+  const total = subtotal + shipping - discount;
 
   const handleUpdateQuantity = (itemId: string, newQuantity: number) => {
     if (newQuantity < 1) return; // Prevents negative quantity
@@ -35,14 +38,9 @@ const CartPage = () => {
     dispatch(removeFromCart(itemId));
   };
 
-  // const handleApplyCoupon = () => {
-  //   console.log("Applying coupon:", couponCode)
-  //   // Implement coupon logic
-  // }
-
   const handleCheckout = () => {
-    navigate("/checkout")
-  }
+    navigate("/checkout");
+  };
 
   return (
     <div className="container py-8 h-screen">
@@ -70,26 +68,49 @@ const CartPage = () => {
                     </div>
 
                     <div className="flex-grow">
-                      <h3 className="font-medium text-lg">{item.productName}</h3>
+                      <h3 className="font-medium text-lg">
+                        {item.productName}
+                      </h3>
 
                       <div className="flex items-center mt-2">
-                        <div className="flex items-center border rounded-md">
-                          <button
-                            onClick={() => handleUpdateQuantity(item._id!, item.quantity - 1)}
-                            className="px-3 py-1"
-                            aria-label="Decrease quantity"
-                          >
-                            <Minus size={16} />
-                          </button>
-                          <span className="px-4 py-1">{item.quantity}</span>
-                          <button
-                            onClick={() => handleUpdateQuantity(item._id!, item.quantity + 1)}
-                            className="px-3 py-1"
-                            aria-label="Increase quantity"
-                          >
-                            <Plus size={16} />
-                          </button>
-                        </div>
+                        {isBulkOrder ? (
+                          <input
+                            placeholder="QTY"
+                            className="px-4 py-1 border rounded-md"
+                            value={item.quantity}
+                            onChange={(e) =>
+                              handleUpdateQuantity(item._id!, +e.target.value)
+                            }
+                          />
+                        ) : (
+                          <div className="flex items-center border rounded-md">
+                            <button
+                              onClick={() =>
+                                handleUpdateQuantity(
+                                  item._id!,
+                                  item.quantity - 1
+                                )
+                              }
+                              className="px-3 py-1"
+                              aria-label="Decrease quantity"
+                            >
+                              <Minus size={16} />
+                            </button>
+                            <span className="px-4 py-1">{item.quantity}</span>
+                            <button
+                              onClick={() =>
+                                handleUpdateQuantity(
+                                  item._id!,
+                                  item.quantity + 1
+                                )
+                              }
+                              className="px-3 py-1"
+                              aria-label="Increase quantity"
+                            >
+                              <Plus size={16} />
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -109,7 +130,10 @@ const CartPage = () => {
             ) : (
               <div className="py-8 text-center">
                 <p className="text-gray-500 mb-4">Your cart is empty</p>
-                <Link to="/shop" className="bg-black text-white px-6 py-2 inline-block">
+                <Link
+                  to="/shop"
+                  className="bg-black text-white px-6 py-2 inline-block"
+                >
                   Continue Shopping
                 </Link>
               </div>
@@ -121,15 +145,20 @@ const CartPage = () => {
         <div>
           <h2 className="text-xl font-bold mb-4">Summary</h2>
 
-          <div className="border rounded-md p-4 mb-6">
-            <input
-              type="text"
-              placeholder="Enter Discount Coupon Here"
-              value={couponCode}
-              onChange={(e) => setCouponCode(e.target.value)}
-              className="w-full p-2 focus:outline-none"
-            />
-          </div>
+          {profile?.userType !== UserRoleEnum.INDIVIDUAL && (
+            <div className="border rounded-md p-4 mb-6">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  name="saveInformation"
+                  className="mr-2"
+                  checked={isBulkOrder}
+                  onChange={(e) => dispatch(updateBulkOrder(e.target.checked))}
+                />
+                <span>Is Bulk Order</span>
+              </label>
+            </div>
+          )}
 
           <div className="border-t border-b py-4 space-y-3">
             <div className="flex justify-between">
@@ -153,14 +182,16 @@ const CartPage = () => {
             <span>LKR {total}</span>
           </div>
 
-          <button onClick={handleCheckout} className="w-full bg-black text-white py-3 font-medium uppercase mt-4">
+          <button
+            onClick={handleCheckout}
+            className="w-full bg-black text-white py-3 font-medium uppercase mt-4"
+          >
             CHECK OUT
           </button>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default CartPage
-
+export default CartPage;
