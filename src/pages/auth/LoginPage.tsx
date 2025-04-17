@@ -33,6 +33,7 @@ const LoginPage = () => {
           </div>
 
           {isLoading && <h5>Loading</h5>}
+          {errorMessage && <p className="flex items-center px-4 py-3 rounded shadow space-x-4 border mb-2 text-red-500">{errorMessage}</p>}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-2">

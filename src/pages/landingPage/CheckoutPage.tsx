@@ -29,6 +29,9 @@ interface FormData {
     street: string;
     zip: string;
   };
+  email: string;
+  isBulkOrder: boolean;
+  isCredit: boolean;
 }
 
 const CheckoutPage = () => {
@@ -50,7 +53,7 @@ const CheckoutPage = () => {
     (total, item) => total + (item.price || 0) * item.quantity,
     0
   );
-  const shipping = 300;
+  const shipping = 400;
   const total = subtotal + shipping;
 
   const handleQuantityChange = (id: string, newQuantity: number) => {
@@ -114,7 +117,11 @@ const CheckoutPage = () => {
             product: item._id,
           })),
           customerEmail: profile?.email,
-          formData: data,
+          formData: {
+            ...data,
+            isBulkOrder,
+            isCredit,
+          },
         },
       });
 
@@ -144,6 +151,17 @@ const CheckoutPage = () => {
             <div className="mb-6">
               <h2 className="text-lg font-medium mb-4">Shipping address</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <FormField label="Email" id="email" required>
+                  <input
+                    {...register("email", {
+                      required: "Email is required",
+                    })}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                  />
+                  {errors.email && (
+                    <p className="text-red-500">{errors.email.message}</p>
+                  )}
+                </FormField>
                 <FormField label="City" id="city" required>
                   <input
                     {...register("deliveryAddress.city", {
