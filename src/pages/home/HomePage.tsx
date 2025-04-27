@@ -24,8 +24,7 @@ const HomePage = () => {
     twoMonthsAgo.setMonth(now.getMonth() - 2);
 
     const hottest = products.filter((product) => {
-      const createdAt = new Date(product?.createdAt || "");
-      return createdAt >= oneWeekAgo;
+      return product?.isHot;
     });
 
     const newArrivals = products.filter((product) => {

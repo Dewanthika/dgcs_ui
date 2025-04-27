@@ -1,3 +1,5 @@
+import ICategory from "./ICategory";
+
 interface IProduct {
   _id?: string;
   productName: string;
@@ -5,10 +7,11 @@ interface IProduct {
   price?: number;
   weight?: number;
   stock?: number;
-  categoryID: string;
+  categoryID: string | ICategory;
   imageURL?: string;
   image?: string; // For file upload
   createdAt?: Date;
+  isHot?: boolean;
 }
 
 export default IProduct;

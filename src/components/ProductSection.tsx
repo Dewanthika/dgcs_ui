@@ -36,7 +36,7 @@ const ProductSection = ({ title, subtitle, products }: IProductSectionProps) => 
               discountPercentage={product.price}
               imageUrl={product.imageURL || ""}
               handleAddToCart={() => {
-                dispatch(addToCart(product));
+                dispatch(addToCart({ product, quantity: 1 }));
               }}
             />
           ))}

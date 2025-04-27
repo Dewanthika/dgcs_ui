@@ -26,6 +26,7 @@ export interface ProductFormData {
   createdAt: string;
   uploadedAt: string;
   stock: string;
+  isHot?: boolean;
 }
 
 // Inventory types

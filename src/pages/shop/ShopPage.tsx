@@ -140,7 +140,7 @@ const ShopPage = () => {
                     discountPercentage={product.price}
                     imageUrl={product.imageURL || ""}
                     handleAddToCart={() => {
-                      dispatch(addToCart(product));
+                      dispatch(addToCart({ product, quantity: 1 }));
                     }}
                   />
                 </div>

@@ -1,20 +1,19 @@
-
-import { useForm } from "react-hook-form";
+import { SubmitHandler, useForm } from "react-hook-form";
 import { io } from "socket.io-client";
 import FileInput from "../../components/ui/FileUpload";
 import FormField from "../../components/ui/FormField";
 import { convertFileToBase64 } from "../../helpers/generalHelper";
 import useGetAllCategory from "../../hooks/useGetAllCategory";
-import type { ProductFormData } from "../../types";
 import IProduct from "../../types/IProduct";
+import { useEffect } from "react";
 
 interface ProductFormProps {
-  initialData?: ProductFormData;
+  initialData?: IProduct;
   onCancel: () => void;
 }
 
 // Socket connection to the WebSocket server
-const socket = io("http://localhost:8080/products", {
+const socket = io(`${import.meta.env.VITE_API_URL}/products`, {
   withCredentials: true,
 });
 
@@ -22,52 +21,16 @@ const ProductForm = ({ initialData, onCancel }: ProductFormProps) => {
   const { data: category } = useGetAllCategory();
   const isEditing = !!initialData;
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    watch,
-    formState: { errors },
-  } = useForm<IProduct>({});
-  //   e: React.ChangeEvent<
-  //     HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-  //   >
-  // ) => {
-  //   const { name, value } = e.target;
-  //   setFormData((prev) => ({ ...prev, [name]: value }));
-  // };
+  const { register, handleSubmit, reset } = useForm<IProduct>({
+    defaultValues: initialData,
+  });
 
-  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   if (e.target.files) {
-  //     const filesArray = Array.from(e.target.files);
-  //     setFormData((prev) => ({
-  //       ...prev,
-  //       images: [...prev.images, ...filesArray],
-  //     }));
+  // Reset form when initialData changes
+  useEffect(() => {
+    reset(initialData);
+  }, [initialData, reset]);
 
-  //     // Create preview URLs
-  //     const newPreviewUrls = filesArray.map((file) =>
-  //       URL.createObjectURL(file)
-  //     );
-  //     setPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
-  //   }
-  // };
-
-  // const handleRemoveImage = (index: number) => {
-  //   // Remove image from formData
-  //   const newImages = [...formData.images];
-  //   newImages.splice(index, 1);
-  //   setFormData((prev) => ({ ...prev, images: newImages }));
-
-  //   // Remove preview URL and revoke object URL to free memory
-  //   URL.revokeObjectURL(previewUrls[index]);
-  //   const newPreviewUrls = [...previewUrls];
-  //   newPreviewUrls.splice(index, 1);
-  //   setPreviewUrls(newPreviewUrls);
-  // };
-
-
-  const onSubmit = async (data: IProduct) => {
+  const onSubmit: SubmitHandler<IProduct> = async (data) => {
     console.log("Form submitted:", data);
 
     let base64: string | undefined;
@@ -75,40 +38,33 @@ const ProductForm = ({ initialData, onCancel }: ProductFormProps) => {
     // Handle file conversion to base64
     if (data.image) {
       let file: File;
-      
+
       if (data.image instanceof FileList && data.image.length > 0) {
         file = data.image[0];
         base64 = await convertFileToBase64(file);
       }
     }
 
-    // Destructure and exclude image (imgUrl should not go to backend)
+    // Destructure and exclude imageURL (should not go to backend)
     const {
       imageURL, // ignore
       ...rest
     } = data;
 
-    const createProductDto = {
-      ...rest,
-    };
-
-    const payload = {
-      createProductDto,
-      file: base64,
-    };
-
     try {
-      // if (isEdit) {
-      //   socket.emit("updateProduct", {
-      //     id,
-      //     updateProductDto: createProductDto,
-      //     file: base64,
-      //   });
-      // } else {
-      // }
-      socket.emit("createProduct", payload);
-      onCancel()
-      // navigator("/product");
+      if (isEditing) {
+        socket.emit("updateProduct", {
+          id: initialData._id,
+          updateProductDto: rest,
+          file: base64,
+        });
+      } else {
+        socket.emit("createProduct", {
+          createProductDto: rest,
+          file: base64,
+        });
+      }
+      onCancel();
     } catch (error) {
       console.error("Error submitting form:", error);
     }
@@ -197,34 +153,21 @@ const ProductForm = ({ initialData, onCancel }: ProductFormProps) => {
         <div className="border-2 border-dashed border-gray-300 rounded-md p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50">
           <FileInput
             {...register("image", {
-              required: "Product name is required",
+              required: initialData?.imageURL ? false : "Image is required",
             })}
           />
         </div>
-{/* 
-        {previewUrls.length > 0 && (
-          <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {previewUrls.map((url, index) => (
-              <div key={index} className="relative">
-                <img
-                  src={url || "/placeholder.svg"}
-                  alt={`Preview ${index}`}
-                  className="h-24 w-24 object-cover rounded-md border"
-                />
-                <button
-                  type="button"
-                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // handleRemoveImage(index);
-                  }}
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-        )} */}
+        {initialData?.imageURL && <img src={initialData?.imageURL} />}
+      </FormField>
+
+      <FormField label="Hot Product" id="isHot">
+        <input
+          type="checkbox"
+          id="isHot"
+          {...register("isHot")}
+          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+          defaultChecked={initialData?.isHot}
+        />
       </FormField>
 
       <FormField label="Description" id="productDescription" required>

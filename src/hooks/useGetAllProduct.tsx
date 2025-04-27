@@ -27,7 +27,6 @@ const useGetAllProduct = () => {
         // Handle error case
         console.error("Socket error:", response.error);
       }
-      // setIsLoading(false);
     });
 
     // Listen for product updates and update the list when a product is updated

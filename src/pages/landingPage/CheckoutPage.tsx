@@ -17,7 +17,7 @@ import {
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import appFetch from "../../utils/appFetch";
 
-const socket = io("http://localhost:8080/order", {
+const socket = io(`${import.meta.env.VITE_API_URL}/order`, {
   withCredentials: true,
 });
 
