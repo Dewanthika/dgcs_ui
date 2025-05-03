@@ -34,7 +34,7 @@ const AdminSidebar = () => {
         <img
               src="/Logo.png?height=40&width=40"
               alt="Admin"
-              className="w-full h-full object-cover"
+              className="w-full h-[100px] object-cover"
             />
         </Link>
       </div>

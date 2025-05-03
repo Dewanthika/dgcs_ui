@@ -12,7 +12,11 @@ const Header = () => {
     <header className="py-4 w-full m-auto">
       <div className="container flex justify-between items-center">
         <Link to="/" className="text-2xl font-bold">
-          LOGO
+          <img
+            src="/Logo.png?height=20&width=40"
+            alt="Admin"
+            className="w-full h-[100px] object-cover"
+          />
         </Link>
         <nav className="flex items-center gap-6">
           <Link

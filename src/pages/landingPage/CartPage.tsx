@@ -12,8 +12,10 @@ import {
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { getProfile } from "../../store/selectors/userSelector";
 import UserRoleEnum from "../../constant/userRoleEnum";
+import useAuth from "../../hooks/useAuth";
 
 const CartPage = () => {
+  const { isAuth } = useAuth();
   const navigate = useNavigate();
   const profile = useAppSelector(getProfile);
   const cartItems = useAppSelector(getAllCartItems);
@@ -39,7 +41,7 @@ const CartPage = () => {
   };
 
   const handleCheckout = () => {
-    navigate("/checkout");
+    navigate(isAuth ? "/login" : "/checkout");
   };
 
   return (
