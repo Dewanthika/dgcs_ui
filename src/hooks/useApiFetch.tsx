@@ -7,11 +7,11 @@ interface IUseApiFetchOptions {
   method?: "get" | "post" | "put" | "delete" | "patch";
 }
 
-interface UsePostResponse<T> {
+interface UseApiFetchResponse<T> {
   data: T | null;
   isLoading: boolean;
-  error: string | null;
-  postData: (postData: T) => Promise<unknown>;
+  error: Error | null;
+  postData: (postData: T) => Promise<T | void>;
   cancelRequest: () => void;
 }
 
@@ -20,14 +20,13 @@ interface IUseApiFetchProps {
   options?: IUseApiFetchOptions;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-constraint
-const useApiFetch = <T extends unknown>({
+const useApiFetch = <T,>({
   url,
   options = {},
-}: IUseApiFetchProps): UsePostResponse<T> => {
+}: IUseApiFetchProps): UseApiFetchResponse<T> => {
   const [isLoading, setLoading] = useState(false);
   const [data, setData] = useState<T | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Error | null>(null);
   const abortController = new AbortController();
 
   const cancelRequest = useCallback(() => {
@@ -35,7 +34,7 @@ const useApiFetch = <T extends unknown>({
   }, [abortController]);
 
   const postData = useCallback(
-    async (postData: T) => {
+    async (postData: T): Promise<T | void> => {
       setLoading(true);
       setError(null);
 
@@ -49,15 +48,17 @@ const useApiFetch = <T extends unknown>({
         });
 
         setData(responseData);
-        return responseData
+        return responseData;
       } catch (error) {
         if (abortController.signal.aborted) {
-          setError("Request cancelled");
+          setError(new Error("Request cancelled"));
         } else {
-          const axiosErrorMessage = handleAxiosError(error as string);
-          const errorMessage =
-            error instanceof Error ? error.message : "Unknown error occurred";
-          setError(axiosErrorMessage || errorMessage);
+          // Fixed: Properly type the error before passing to handleAxiosError
+          const errorMessage = error instanceof Error 
+            ? handleAxiosError(error.message) 
+            : handleAxiosError(String(error));
+          
+          setError(new Error(errorMessage));
         }
         setData(null);
       } finally {

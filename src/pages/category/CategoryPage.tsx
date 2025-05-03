@@ -1,14 +1,17 @@
-import React, { useState } from "react";
-import DataTable from "../../components/tables/DataTable";
-import useGetAllCategory from "../../hooks/useGetAllCategory";
-import PageHeader from "../../components/ui/PageHeader";
 import { UserPlus } from "lucide-react";
+import { useState } from "react";
+import DataTable from "../../components/tables/DataTable";
 import Modal from "../../components/ui/Modal";
+import PageHeader from "../../components/ui/PageHeader";
 import CategoryForm from "../../features/category";
+import useGetAllCategory from "../../hooks/useGetAllCategory";
+import ICategory from "../../types/ICategory";
 
 const CategoryPage = () => {
   const { data, fetchData } = useGetAllCategory();
   const [showAddUserModal, setShowAddUserModal] = useState(false);
+
+  const [currentCategory , setCurrentCategory] = useState<ICategory | undefined>(undefined);
 
   return (
     <div>
@@ -30,6 +33,12 @@ const CategoryPage = () => {
         columns={[
           { header: "Name", accessor: (category) => category.name },
           { header: "Status", accessor: (category) => category.status },
+          {
+            header:"Actions",
+            accessor: (category) => (
+              <button onClick={() => {setCurrentCategory(category);setShowAddUserModal(true)}} className="text-indigo-600 hover:text-indigo-900 cursor-pointer">Edit</button>
+            )
+          }
         ]}
         data={data}
         keyExtractor={(category) => category?._id || "unknown-id"}
@@ -45,14 +54,17 @@ const CategoryPage = () => {
         isOpen={showAddUserModal}
         onClose={() => {
           setShowAddUserModal(false);
+          setCurrentCategory(undefined);
         }}
-        title={"Add Category"}
+        title={currentCategory ? "Edit Category" : "Add Category"}
         maxWidth="4xl"
       >
         <CategoryForm
           // initialData={currentUser}
+          initialData={currentCategory}
           onCancel={() => {
             setShowAddUserModal(false);
+            setCurrentCategory(undefined);
             fetchData();
             // setCurrentUser(undefined);
           }}

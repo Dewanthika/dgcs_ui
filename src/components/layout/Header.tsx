@@ -5,7 +5,7 @@ import { useAppSelector } from "../../store/store";
 import { getAllCartItems } from "../../store/selectors/cartSelector";
 
 const Header = () => {
-  const { isAuth } = useAuth();
+  const { isAuth, signout } = useAuth();
   const cart = useAppSelector(getAllCartItems);
 
   return (
@@ -31,7 +31,8 @@ const Header = () => {
                 Dashboard
               </Link>
               <Link
-                to="/login"
+                to=""
+                onClick={signout}
                 className="text-sm hover:underline underline-offset-4"
               >
                 logout

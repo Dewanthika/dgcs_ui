@@ -2,16 +2,17 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import FormField from "../../components/ui/FormField";
 import useApiFetch from "../../hooks/useApiFetch";
 import ICategory from "../../types/ICategory";
+import { useEffect } from "react";
 
 interface ICategoryFormProps {
+  initialData?: ICategory;
   onCancel: () => void;
 }
 
-const CategoryForm = ({ onCancel }: ICategoryFormProps) => {
+const CategoryForm = ({ initialData, onCancel }: ICategoryFormProps) => {
   const {
     register,
     handleSubmit,
-    control,
     reset,
     formState: { errors },
   } = useForm<ICategory>({
@@ -26,30 +27,42 @@ const CategoryForm = ({ onCancel }: ICategoryFormProps) => {
     isLoading,
     error,
   } = useApiFetch<ICategory>({
-    url: `/category/`,
+    url: initialData ? `/category/${initialData._id}` : `/category/`,
     options: {
-      method: "post",
+      method: initialData ? "patch" : "post",
     },
   });
 
   const onSubmit: SubmitHandler<ICategory> = async (data) => {
-    await postData(data);
+    // Prepare the data to send by removing internal fields
+    const dataToSend = {
+      name: data.name,
+      status: data.status
+    };
+
+    await postData(dataToSend);
     if (!error) {
+      alert(initialData ? "Category updated successfully!" : "Category added successfully!");
       reset();
       onCancel();
     }
   };
+  
+  useEffect(() => {
+    initialData && reset(initialData);
+  }, [initialData, reset]);
 
   return (
     <div>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <FormField label="Postal Code" id="postal_code" required>
+        <FormField label="Category Name" id="name" required>
           <input
             {...register("name", {
-              required: "Postal code is required",
+              required: "Category name is required",
             })}
             className="w-full p-2 border border-gray-300 rounded-md"
           />
+          {errors.name && <span className="text-red-500">{errors.name.message}</span>}
         </FormField>
 
         <FormField label="Status" id="status" required>
@@ -70,11 +83,18 @@ const CategoryForm = ({ onCancel }: ICategoryFormProps) => {
           >
             Cancel
           </button>
-          <button type="submit" className="px-4 py-2 bg-indigo-600 text-white">
-            {"Add User"}
+          <button 
+            type="submit" 
+            className={`px-4 py-2 text-white rounded-md ${
+              initialData ? "bg-yellow-400 hover:bg-yellow-700" : "bg-indigo-600 hover:bg-indigo-700"
+            }`}
+            disabled={isLoading}
+          >
+            {isLoading ? "Processing..." : (initialData ? "Update Category" : "Add Category")}
           </button>
         </div>
       </form>
+      {/* Error: {error instanceof Error ? error.message : String(error)} */}
     </div>
   );
 };

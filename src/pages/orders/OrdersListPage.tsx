@@ -1,188 +1,78 @@
-import { useState, useEffect } from "react"
-import { Link } from "react-router-dom"
-import { Plus } from "lucide-react"
-import type { Order } from "../../types"
-import PageHeader from "../../components/ui/PageHeader"
-import SearchBar from "../../components/ui/SearchBar"
-import DataTable from "../../components/tables/DataTable"
-import StatusBadge from "../../components/ui/StatusBadge"
-import ActionButtons from "../../components/ui/ActionButtons"
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { Plus } from "lucide-react";
+import useGetAllOrders from "../../hooks/useGetAllOrders";
+import PageHeader from "../../components/ui/PageHeader";
+import SearchBar from "../../components/ui/SearchBar";
+import DataTable from "../../components/tables/DataTable";
+import StatusBadge from "../../components/ui/StatusBadge";
+import ActionButtons from "../../components/ui/ActionButtons";
+import type IOrder from "../../types/IOrder";
 
 const OrdersListPage = () => {
-  const [orders, setOrders] = useState<Order[]>([])
-  const [selectedStatus, setSelectedStatus] = useState<string>("all")
-  const [searchTerm, setSearchTerm] = useState<string>("")
+  const orders = useGetAllOrders();
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    // Load mock orders data
-    const mockOrders: Order[] = [
-      {
-        id: 1,
-        orderID: "ORD001",
-        userID: "USR002",
-        customerName: "John Doe",
-        contact: "+94 234 567 890",
-        deliveryAddress: "456 Customer Ave, Kandy, Central Province, 20000",
-        orderWeight: 2.5,
-        deliveryCharge: 350,
-        orderType: "Standard",
-        paymentMethod: "Credit Card",
-        orderStatus: "Processing",
-        totalAmount: 2850,
-        orderDate: "2023-07-15",
-        orderItems: [
-          {
-            orderItemID: "ITEM001",
-            productID: 101,
-            productName: "Smartphone X",
-            quantity: 1,
-            price: 799,
-          },
-          {
-            orderItemID: "ITEM002",
-            productID: 103,
-            productName: "Wireless Headphones",
-            quantity: 1,
-            price: 149,
-          },
-        ],
-      },
-      {
-        id: 2,
-        orderID: "ORD002",
-        userID: "USR003",
-        customerName: "Jane Smith",
-        contact: "+94 345 678 901",
-        deliveryAddress: "789 User Blvd, Galle",
-        orderWeight: 1.2,
-        deliveryCharge: 250,
-        orderType: "Express",
-        paymentMethod: "Cash on Delivery",
-        orderStatus: "Shipped",
-        totalAmount: 1549,
-        orderDate: "2023-07-14",
-        orderItems: [
-          {
-            orderItemID: "ITEM003",
-            productID: 104,
-            productName: "Smart Watch",
-            quantity: 1,
-            price: 249,
-          },
-          {
-            orderItemID: "ITEM004",
-            productID: 105,
-            productName: "Bluetooth Speaker",
-            quantity: 1,
-            price: 99,
-          },
-        ],
-      },
-      {
-        id: 3,
-        orderID: "ORD003",
-        userID: "USR002",
-        customerName: "John Doe",
-        contact: "+94 234 567 890",
-        deliveryAddress: "456 Customer Ave, Kandy, Central Province, 20000",
-        orderWeight: 3.8,
-        deliveryCharge: 450,
-        orderType: "Standard",
-        paymentMethod: "Credit Card",
-        orderStatus: "Delivered",
-        totalAmount: 1749,
-        orderDate: "2023-07-10",
-        orderItems: [
-          {
-            orderItemID: "ITEM005",
-            productID: 102,
-            productName: "Laptop Pro",
-            quantity: 1,
-            price: 1299,
-          },
-        ],
-      },
-      {
-        id: 4,
-        orderID: "ORD004",
-        userID: "USR006",
-        customerName: "New Customer",
-        contact: "+94 678 901 234",
-        deliveryAddress: "303 New User St, Matara",
-        orderWeight: 0.5,
-        deliveryCharge: 150,
-        orderType: "Express",
-        paymentMethod: "PayPal",
-        orderStatus: "Cancelled",
-        totalAmount: 249,
-        orderDate: "2023-07-12",
-        orderItems: [
-          {
-            orderItemID: "ITEM006",
-            productID: 104,
-            productName: "Smart Watch",
-            quantity: 1,
-            price: 249,
-          },
-        ],
-      },
-    ]
+    console.log("Orders loaded in OrdersListPage:", orders);
+  }, [orders]);
 
-    setOrders(mockOrders)
-  }, [])
-
-  const handleDeleteOrder = (id: number) => {
+  const handleDeleteOrder = (id: string) => {
     if (window.confirm("Are you sure you want to delete this order?")) {
-      setOrders(orders.filter((order) => order.id !== id))
+      console.log("Delete requested for order:", id);
     }
-  }
+  };
 
-  // Filter orders based on status and search term
   const filteredOrders = orders.filter((order) => {
-    const matchesStatus = selectedStatus === "all" || order.orderStatus.toLowerCase() === selectedStatus.toLowerCase()
+    const matchesStatus =
+      selectedStatus === "all" ||
+      order.orderStatus?.toLowerCase() === selectedStatus.toLowerCase();
     const matchesSearch =
-      order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.contact.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.orderID.toLowerCase().includes(searchTerm.toLowerCase())
-    return matchesStatus && matchesSearch
-  })
+      order.userID?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.deliveryAddress?.street?.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesStatus && matchesSearch;
+  });
 
-  // Get unique statuses from orders
-  const statuses = ["all", ...new Set(orders.map((order) => order.orderStatus.toLowerCase()))]
+  const statuses = ["all", ...new Set(orders.map((o) => o.orderStatus?.toLowerCase()))];
 
   const columns = [
-    { header: "Order ID", accessor: "orderID" },
+    { header: "Order ID", accessor: (order: IOrder) => order._id?.slice(-6).toUpperCase() },
     {
-      header: "Customer",
-      accessor: (order: Order) => (
-        <div>
-          <div>{order.customerName}</div>
-          <div className="text-xs text-gray-500">{order.contact}</div>
+      header: "Address",
+      accessor: (order: IOrder) => (
+        <div className="text-sm">
+          {order.deliveryAddress?.street}, {order.deliveryAddress?.city}
+          <div className="text-xs text-gray-500">
+            {order.deliveryAddress?.state}, {order.deliveryAddress?.zip}
+          </div>
         </div>
       ),
     },
-    { header: "Date", accessor: "orderDate" },
+    { header: "Date", accessor: (order: IOrder) => new Date(order.orderDate).toLocaleDateString() },
     {
       header: "Total",
-      accessor: (order: Order) => `LKR ${order.totalAmount.toFixed(2)}`,
+      accessor: (order: IOrder) => `LKR ${order.totalAmount?.toFixed(2)}`,
     },
     {
       header: "Status",
-      accessor: (order: Order) => <StatusBadge status={order.orderStatus} type="order" />,
+      accessor: (order: IOrder) => (
+        <StatusBadge status={order.orderStatus} type="order" />
+      ),
     },
-    { header: "Payment", accessor: "paymentMethod" },
-    { header: "Type", accessor: "orderType" },
+    { header: "Payment", accessor: (order: IOrder) => order.paymentMethod },
+    { header: "Type", accessor: (order: IOrder) => order.orderType },
     {
       header: "Actions",
-      accessor: (order: Order) => (
+      accessor: (order: IOrder) => (
         <ActionButtons
-          viewPath={`/dashboard/orders/${order.id}/view`}
-          editPath={`/dashboard/orders/${order.id}/edit`}
-          onDelete={() => handleDeleteOrder(order.id)}
+          viewPath={`/dashboard/orders/${order._id}/view`}
+          editPath={`/dashboard/orders/${order._id}/edit`}
+          onDelete={() => handleDeleteOrder(order._id)}
         />
       ),
     },
-  ]
+  ];
 
   return (
     <>
@@ -204,9 +94,8 @@ const OrdersListPage = () => {
           <SearchBar
             value={searchTerm}
             onChange={setSearchTerm}
-            placeholder="Search orders by customer name, contact, or order ID..."
+            placeholder="Search orders by user ID or address..."
           />
-
           <div>
             <select
               value={selectedStatus}
@@ -215,7 +104,9 @@ const OrdersListPage = () => {
             >
               {statuses.map((status) => (
                 <option key={status} value={status}>
-                  {status === "all" ? "All Statuses" : status.charAt(0).toUpperCase() + status.slice(1)}
+                  {status === "all"
+                    ? "All Statuses"
+                    : status.charAt(0).toUpperCase() + status.slice(1)}
                 </option>
               ))}
             </select>
@@ -225,7 +116,7 @@ const OrdersListPage = () => {
         <DataTable
           columns={columns}
           data={filteredOrders}
-          keyExtractor={(order) => order.id}
+          keyExtractor={(order) => order._id}
           emptyMessage={
             searchTerm || selectedStatus !== "all"
               ? "No orders found. Try changing your filters."
@@ -234,8 +125,7 @@ const OrdersListPage = () => {
         />
       </div>
     </>
-  )
-}
+  );
+};
 
-export default OrdersListPage
-
+export default OrdersListPage;

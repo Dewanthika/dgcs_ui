@@ -1,46 +1,46 @@
-import type React from "react"
-
-import { useState, useEffect } from "react"
-import { useParams, useNavigate } from "react-router-dom"
-import { Plus, Minus } from "lucide-react"
-import { getAllProducts } from "../services/productService"
-import { getOrderById, updateOrder } from "../services/orderService";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Plus, Minus } from "lucide-react";
+import { getAllProducts } from "../services/productService";
+import { useOrderWebSocket } from "../hooks/useOrderWebSocket";
 
 interface Product {
-  id: number
-  title: string
-  price: number
-  stock: number
+  _id?: string;
+  title: string;
+  price: number;
+  stock?: number;
 }
 
 interface OrderItem {
-  productId: number
-  productTitle: string
-  quantity: number
-  price: number
+  productId: string;
+  productTitle: string;
+  quantity: number;
+  price: number;
 }
 
 interface OrderFormData {
-  customerName: string
-  contact: string
-  email: string
-  address: string
-  city: string
-  district: string
-  postalCode: string
-  paymentDate: string
-  paymentStatus: string
-  items: OrderItem[]
-  totalAmount: number
-  orderStatus: string
-  orderDate: string
+  customerName: string;
+  contact: string;
+  email: string;
+  address: string;
+  city: string;
+  district: string;
+  postalCode: string;
+  paymentDate: string;
+  paymentStatus: string;
+  items: OrderItem[];
+  totalAmount: number;
+  orderStatus: string;
+  orderDate: string;
 }
 
 const EditOrderPage = () => {
-  const { id } = useParams<{ id: string }>()
-  const navigate = useNavigate()
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [products, setProducts] = useState<Product[]>([]);
+  // const [loading, setLoading] = useState(true);
+  
+  const orderData = useOrderWebSocket({ id });
 
   const [formData, setFormData] = useState<OrderFormData>({
     customerName: "",
@@ -52,140 +52,127 @@ const EditOrderPage = () => {
     postalCode: "",
     paymentDate: "",
     paymentStatus: "Pending",
-    items: [{ productId: 0, productTitle: "", quantity: 1, price: 0 }],
+    items: [{ productId: "", productTitle: "", quantity: 1, price: 0 }],
     totalAmount: 0,
     orderStatus: "Processing",
     orderDate: new Date().toISOString().split("T")[0],
-  })
+  });
 
   useEffect(() => {
-    // Load products from our service
-    const loadedProducts = getAllProducts()
-    setProducts(loadedProducts)
-
-    // Load order data if editing
-    if (id) {
-      const order = getOrderById(Number(id))
-      if (order) {
-        setFormData({
-          customerName: order.customerName,
-          contact: order.contact,
-          email: order.email || "",
-          address: order.address,
-          city: order.city,
-          district: order.district,
-          postalCode: order.postalCode,
-          paymentDate: order.paymentDate || "",
-          paymentStatus: order.paymentStatus,
-          items: order.items,
-          totalAmount: order.totalAmount,
-          orderStatus: order.orderStatus,
-          orderDate: order.orderDate,
-        })
+    const loadProducts = async () => {
+      try {
+        const allProducts = await getAllProducts();
+        // Transform products to match our Product interface
+        const transformedProducts = allProducts.map(product => ({
+          // _id: product._id.toString(),
+          title: product.title,
+          price: product.price,
+          stock: product.stock
+        }));
+        setProducts(transformedProducts);
+      } catch (err) {
+        console.error("Failed to load products:", err);
       }
-    }
-    setLoading(false)
-  }, [id])
+    };
+
+    loadProducts();
+  }, []);
 
   useEffect(() => {
-    // Calculate total amount whenever items change
-    const total = formData.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-    setFormData((prev) => ({ ...prev, totalAmount: total }))
-  }, [formData.items])
+    if (orderData) {
+      setFormData({
+        customerName: `${orderData.userID?.fName || ""} ${orderData.userID?.lName || ""}`,
+        contact: orderData.userID?.phone || "",
+        email: orderData.userID?.email || "",
+        address: orderData.deliveryAddress?.street || "",
+        city: orderData.deliveryAddress?.city || "",
+        district: orderData.deliveryAddress?.state || "",
+        postalCode: orderData.deliveryAddress?.zip || "",
+        paymentDate: orderData.paymentDate?.split("T")[0] || "",
+        paymentStatus: orderData.paymentStatus || "Pending",
+        items: orderData.items.map((item: any) => ({
+          productId: item.product?._id || "",
+          productTitle: item.product?.title || "",
+          quantity: item.quantity,
+          price: item.unitPrice,
+        })),
+        totalAmount: orderData.totalAmount || 0,
+        orderStatus: orderData.orderStatus || "Processing",
+        orderDate: orderData.orderDate?.split("T")[0] || new Date().toISOString().split("T")[0],
+      });
+      // setLoading(false);
+    }
+  }, [orderData]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  useEffect(() => {
+    const total = formData.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    setFormData((prev) => ({ ...prev, totalAmount: total }));
+  }, [formData.items]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleProductChange = (index: number, e: React.ChangeEvent<HTMLSelectElement>) => {
-    const productId = Number(e.target.value)
-    const selectedProduct = products.find((p) => p.id === productId)
+    const productId = e.target.value;
+    const selectedProduct = products.find((p) => p._id === productId);
+    if (!selectedProduct) return;
 
-    if (selectedProduct) {
-      const updatedItems = [...formData.items]
-      updatedItems[index] = {
-        ...updatedItems[index],
-        productId,
-        productTitle: selectedProduct.title,
-        price: selectedProduct.price,
-      }
-
-      setFormData((prev) => ({ ...prev, items: updatedItems }))
-    }
-  }
+    const updatedItems = [...formData.items];
+    updatedItems[index] = {
+      ...updatedItems[index],
+      productId,
+      productTitle: selectedProduct.title,
+      price: selectedProduct.price,
+    };
+    setFormData((prev) => ({ ...prev, items: updatedItems }));
+  };
 
   const handleQuantityChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    const quantity = Number(e.target.value)
-    if (quantity < 1) return
+    const quantity = Number(e.target.value);
+    if (quantity < 1) return;
 
-    const updatedItems = [...formData.items]
-    updatedItems[index] = { ...updatedItems[index], quantity }
-
-    setFormData((prev) => ({ ...prev, items: updatedItems }))
-  }
+    const updatedItems = [...formData.items];
+    updatedItems[index] = { ...updatedItems[index], quantity };
+    setFormData((prev) => ({ ...prev, items: updatedItems }));
+  };
 
   const addProductRow = () => {
     setFormData((prev) => ({
       ...prev,
-      items: [...prev.items, { productId: 0, productTitle: "", quantity: 1, price: 0 }],
-    }))
-  }
+      items: [...prev.items, { productId: "", productTitle: "", quantity: 1, price: 0 }],
+    }));
+  };
 
   const removeProductRow = (index: number) => {
-    if (formData.items.length === 1) return
+    if (formData.items.length === 1) return;
+    const updatedItems = [...formData.items];
+    updatedItems.splice(index, 1);
+    setFormData((prev) => ({ ...prev, items: updatedItems }));
+  };
 
-    const updatedItems = [...formData.items]
-    updatedItems.splice(index, 1)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    alert("Order updated successfully!");
+    navigate("/dashboard/orders");
+  };
 
-    setFormData((prev) => ({ ...prev, items: updatedItems }))
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="flex items-center justify-center h-full">
+  //       <p>Loading order data...</p>
+  //     </div>
+  //   );
+  // }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-
-    // Validate form
-    if (!formData.customerName || !formData.contact || !formData.address) {
-      alert("Please fill in all required fields")
-      return
-    }
-
-    if (formData.items.some((item) => item.productId === 0)) {
-      alert("Please select products for all items")
-      return
-    }
-
-    if (!id) {
-      alert("Order ID is missing")
-      return
-    }
-
-    // Update order
-    const success = updateOrder(Number(id), {
-      ...formData,
-      updatedAt: new Date().toISOString(),
-    })
-
-    if (success) {
-      // Show success message
-      alert("Order updated successfully!")
-
-      // Redirect to orders list
-      navigate("/dashboard/orders")
-    } else {
-      alert("Failed to update order")
-    }
-  }
-
-  if (loading) {
-    return (
-      <>
-        <div className="flex items-center justify-center h-full">
-          <p>Loading order data...</p>
-        </div>
-      </>
-    )
-  }
+  // if (error) {
+  //   return (
+  //     <div className="flex items-center justify-center h-full">
+  //       <p className="text-red-500">Error: {error}</p>
+  //     </div>
+  //   );
+  // }
 
   return (
     <>
@@ -371,10 +358,10 @@ const EditOrderPage = () => {
                     className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     required
                   >
-                    <option value="">Product</option>
+                    <option value="">Select a product</option>
                     {products.map((product) => (
-                      <option key={product.id} value={product.id}>
-                        {product.title} - LKR {product.price} ({product.stock} in stock)
+                      <option key={product._id} value={product._id}>
+                        {product.title} - LKR {product.price} ({product.stock || 0} in stock)
                       </option>
                     ))}
                   </select>
@@ -382,7 +369,7 @@ const EditOrderPage = () => {
 
                 <div className="w-32">
                   <label className={index === 0 ? "block mb-2 text-sm font-medium text-gray-700" : "sr-only"}>
-                    Product Quantity
+                    Quantity
                   </label>
                   <input
                     type="number"
@@ -444,8 +431,7 @@ const EditOrderPage = () => {
         </div>
       </form>
     </>
-  )
-}
+  );
+};
 
-export default EditOrderPage
-
+export default EditOrderPage;
