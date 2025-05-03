@@ -30,8 +30,12 @@ const AdminSidebar = () => {
   return (
     <div className="w-64 bg-white border-r">
       <div className="p-6">
-        <Link to="/dashboard" className="text-xl font-bold">
-          Logo
+        <Link to="/" className="text-xl font-bold">
+        <img
+              src="/Logo.png?height=40&width=40"
+              alt="Admin"
+              className="w-full h-full object-cover"
+            />
         </Link>
       </div>
 
@@ -163,13 +167,13 @@ const AdminSidebar = () => {
 
       <div className="absolute bottom-0 w-64 border-t p-4">
         <div className="flex items-center">
-          <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden">
+          {/* <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden">
             <img
               src="/placeholder.svg?height=40&width=40"
               alt="Admin"
               className="w-full h-full object-cover"
             />
-          </div>
+          </div> */}
           <div className="ml-3">
             <p className="font-medium">{user?.fName || "Admin"}</p>
             <button onClick={signout}>Logout</button>

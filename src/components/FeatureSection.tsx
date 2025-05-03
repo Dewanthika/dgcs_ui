@@ -3,16 +3,15 @@ const FeatureSection = () => {
     <section className="py-16 md:py-24 bg-white">
       <div className="container">
         <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
-          <div className="space-y-4">
-            <h2 className="text-3xl md:text-4xl font-bold">Feature Lorem Ipsum</h2>
+          {/* <div className="container text-center">
+            <h2 className="text-2xl font-bold mb-6">D G C S Holdings (Pvt) Ltd.</h2>
             <p className="text-muted">
-              At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti
-              atque corrupti quos dolores et quas molestias.
+              "Delivering Solutions Beyond Boundaries"
             </p>
-          </div>
-          <div className="flex justify-center">
+          </div> */}
+          {/* <div className="flex justify-center">
             <img src="/placeholder.svg?height=400&width=400" alt="Feature" className="max-w-full rounded-lg" />
-          </div>
+          </div> */}
         </div>
       </div>
     </section>

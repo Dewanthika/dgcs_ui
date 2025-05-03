@@ -17,8 +17,11 @@ const Newsletter = () => {
   return (
     <section className="py-12 md:py-16 bg-light border-t border-gray-200">
       <div className="container text-center">
-        <h2 className="text-2xl font-bold mb-6">Stay in the Loop with the Latest Trends and Deals!</h2>
-        <form onSubmit={handleSubmit} className="flex max-w-md mx-auto">
+        <h2 className="text-2xl font-bold mb-6">D G C S Holdings (Pvt) Ltd.</h2>
+        <p className="text-muted">
+              "Delivering Solutions Beyond Boundaries"
+            </p>
+        {/* <form onSubmit={handleSubmit} className="flex max-w-md mx-auto">
           <input
             type="email"
             placeholder="Email address"
@@ -30,7 +33,7 @@ const Newsletter = () => {
           <button type="submit" className="bg-primary text-white px-6 py-2 rounded-r-md font-medium">
             SUBSCRIBE
           </button>
-        </form>
+        </form> */}
       </div>
     </section>
   )
