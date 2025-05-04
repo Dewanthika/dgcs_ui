@@ -28,12 +28,20 @@ const LoginPage = () => {
       {/* Left side - Login form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold">Logo</h1>
-          </div>
+          <Link to="/" className="text-2xl font-bold text-center">
+            <img
+              src="/Logo.png"
+              alt="Admin"
+              className="w-[200px] h-full object-cover m-auto"
+            />
+          </Link>
 
           {isLoading && <h5>Loading</h5>}
-          {errorMessage && <p className="flex items-center px-4 py-3 rounded shadow space-x-4 border mb-2 text-red-500">{errorMessage}</p>}
+          {errorMessage && (
+            <p className="flex items-center px-4 py-3 rounded shadow space-x-4 border mb-2 text-red-500">
+              {errorMessage}
+            </p>
+          )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-2">

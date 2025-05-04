@@ -1,3 +1,5 @@
+import IUser from "./IUser";
+
 interface IAddress {
   street: string;
   city: string;
@@ -14,7 +16,7 @@ export interface IOrderItem {
 interface IOrder {
   _id: string;
   id?: number; 
-  userID: string;
+  userID: string | IUser;
   deliveryAddress: IAddress;
   orderWeight: number;
   deliveryCharge: number;

@@ -59,7 +59,10 @@ const Header = () => {
             </>
           )}
 
-          <Link to="/cart" className="flex items-center gap-1.5 text-sm">
+          <Link
+            to={isAuth ? "/cart" : "/login"}
+            className="flex items-center gap-1.5 text-sm"
+          >
             <ShoppingCart size={20} />
             <span>YOUR CART</span>
             <span className="text-muted">({cart.length})</span>
