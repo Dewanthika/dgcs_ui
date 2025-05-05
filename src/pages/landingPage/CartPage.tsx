@@ -41,7 +41,7 @@ const CartPage = () => {
   };
 
   const handleCheckout = () => {
-    navigate(isAuth ? "/login" : "/checkout");
+    navigate(isAuth ? "/checkout" : "/login");
   };
 
   return (

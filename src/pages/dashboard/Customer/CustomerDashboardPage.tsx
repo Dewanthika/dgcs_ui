@@ -1,14 +1,9 @@
 import { useState } from "react";
+import useGetUserOrders from "../../../hooks/useGetUserOrders";
 
 const CustomerDashboardPage = () => {
-  const [activeTab, setActiveTab] = useState("orders");
-
-  // Mock data for the dashboard
-  const orders = [
-    { id: 1234, date: "2023-05-15", total: 2500, status: "Delivered" },
-    { id: 1235, date: "2023-06-20", total: 1800, status: "Processing" },
-    { id: 1236, date: "2023-07-05", total: 3200, status: "Shipped" },
-  ];
+  const [activeTab] = useState("orders");
+  const { orders } = useGetUserOrders();
 
   const wishlist = [
     {
@@ -67,21 +62,27 @@ const CustomerDashboardPage = () => {
                   </thead>
                   <tbody className="divide-y">
                     {orders.map((order) => (
-                      <tr key={order.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 text-sm">#{order.id}</td>
-                        <td className="px-4 py-3 text-sm">{order.date}</td>
-                        <td className="px-4 py-3 text-sm">LKR {order.total}</td>
+                      <tr key={order._id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-sm">
+                          #{order._id.slice(18).toUpperCase()}
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          {new Date(order.orderDate || "").toDateString()}
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          LKR {order.totalAmount}
+                        </td>
                         <td className="px-4 py-3 text-sm">
                           <span
                             className={`px-2 py-1 rounded-full text-xs ${
-                              order.status === "Delivered"
+                              order.orderStatus === "Delivered"
                                 ? "bg-green-100 text-green-800"
-                                : order.status === "Processing"
+                                : order.orderStatus === "Processing"
                                 ? "bg-blue-100 text-blue-800"
                                 : "bg-yellow-100 text-yellow-800"
                             }`}
                           >
-                            {order.status}
+                            {order.orderStatus}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-sm">
