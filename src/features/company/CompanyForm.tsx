@@ -1,110 +1,112 @@
-import type React from "react"
-
-import { useState } from "react"
-import type { Company } from "../../types"
-import FormField from "../../components/ui/FormField"
+import { useForm, type SubmitHandler } from "react-hook-form";
+import FormField from "../../components/ui/FormField";
+import ICompany from "../../types/ICompany";
 
 interface CompanyFormProps {
-  initialData?: Company
-  onSubmit: (data: Omit<Company, "id" | "companyID">) => void
-  onCancel: () => void
+  initialData?: ICompany;
+  onSubmit: (data: Omit<ICompany, "_id">) => void;
+  onCancel: () => void;
 }
 
 const CompanyForm = ({ initialData, onSubmit, onCancel }: CompanyFormProps) => {
-  const isEditing = !!initialData
+  const isEditing = !!initialData;
 
-  const [formData, setFormData] = useState<Omit<Company, "id" | "companyID">>({
-    cmpName: initialData?.cmpName || "",
-    cmpPhone: initialData?.cmpPhone || "",
-    cmpAddress: initialData?.cmpAddress || "",
-    billRefNo: initialData?.billRefNo || "",
-    paymentTerms: initialData?.paymentTerms || "Net 30 Days",
-    creditLimit: initialData?.creditLimit || "",
-  })
+  type FormData = Omit<ICompany, "_id">;
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
-  }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
+    defaultValues: {
+      CMPName: initialData?.CMPName || "",
+      CMPPhone: initialData?.CMPPhone || "",
+      CMPAddress: initialData?.CMPAddress || "",
+      BizRegNo: initialData?.BizRegNo || "",
+      paymentTerms: initialData?.paymentTerms || "Net 30 Days",
+      creditLimit: initialData?.creditLimit || 0,
+    },
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSubmit(formData)
-  }
+  const onFormSubmit: SubmitHandler<FormData> = (data) => {
+    onSubmit(data);
+  };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
       <FormField label="Company Name" id="cmpName" required>
         <input
           type="text"
           id="cmpName"
-          name="cmpName"
-          value={formData.cmpName}
-          onChange={handleInputChange}
+          {...register("CMPName", { required: "Company Name is required" })}
           className="w-full p-2 border border-gray-300 rounded-md"
-          required
         />
+        {errors.CMPName && (
+          <p className="text-red-600">{errors.CMPName.message}</p>
+        )}
       </FormField>
 
       <FormField label="Contact" id="cmpPhone" required>
         <input
           type="tel"
           id="cmpPhone"
-          name="cmpPhone"
-          value={formData.cmpPhone}
-          onChange={handleInputChange}
+          {...register("CMPPhone", { required: "Contact is required" })}
           className="w-full p-2 border border-gray-300 rounded-md"
-          required
         />
+        {errors.CMPPhone && (
+          <p className="text-red-600">{errors.CMPPhone.message}</p>
+        )}
       </FormField>
 
       <FormField label="Address" id="cmpAddress" required>
         <input
           type="text"
           id="cmpAddress"
-          name="cmpAddress"
-          value={formData.cmpAddress}
-          onChange={handleInputChange}
+          {...register("CMPAddress", { required: "Address is required" })}
           className="w-full p-2 border border-gray-300 rounded-md"
-          required
         />
+        {errors.CMPAddress && (
+          <p className="text-red-600">{errors.CMPAddress.message}</p>
+        )}
       </FormField>
 
-      <FormField label="Business Registration Number" id="billRefNo" required>
+      <FormField label="Business Registration Number" id="bizRegNo" required>
         <input
           type="text"
-          id="billRefNo"
-          name="billRefNo"
-          value={formData.billRefNo}
-          onChange={handleInputChange}
+          id="bizRegNo"
+          {...register("BizRegNo", {
+            required: "Business Registration Number is required",
+          })}
           className="w-full p-2 border border-gray-300 rounded-md"
-          required
         />
+        {errors.BizRegNo && (
+          <p className="text-red-600">{errors.BizRegNo.message}</p>
+        )}
       </FormField>
 
       <FormField label="Credit Limit" id="creditLimit" required>
         <input
           type="number"
           id="creditLimit"
-          name="creditLimit"
-          value={formData.creditLimit}
-          onChange={handleInputChange}
+          {...register("creditLimit", {
+            required: "Credit Limit is required",
+            valueAsNumber: true,
+            min: { value: 0, message: "Credit Limit cannot be negative" },
+          })}
           className="w-full p-2 border border-gray-300 rounded-md"
-          required
         />
+        {errors.creditLimit && (
+          <p className="text-red-600">{errors.creditLimit.message}</p>
+        )}
       </FormField>
 
       <FormField label="Payment Terms" id="paymentTerms" required>
         <select
           id="paymentTerms"
-          name="paymentTerms"
-          value={formData.paymentTerms}
-          onChange={handleInputChange}
+          {...register("paymentTerms", {
+            required: "Payment Terms is required",
+          })}
           className="w-full p-2 border border-gray-300 rounded-md"
-          required
         >
           <option value="Net 15 Days">Net 15 Days</option>
           <option value="Net 30 Days">Net 30 Days</option>
@@ -112,6 +114,9 @@ const CompanyForm = ({ initialData, onSubmit, onCancel }: CompanyFormProps) => {
           <option value="Net 60 Days">Net 60 Days</option>
           <option value="Due on Receipt">Due on Receipt</option>
         </select>
+        {errors.paymentTerms && (
+          <p className="text-red-600">{errors.paymentTerms.message}</p>
+        )}
       </FormField>
 
       <div className="mt-6 flex justify-end space-x-3">
@@ -122,13 +127,15 @@ const CompanyForm = ({ initialData, onSubmit, onCancel }: CompanyFormProps) => {
         >
           Cancel
         </button>
-        <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+        <button
+          type="submit"
+          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+        >
           {isEditing ? "Update Company" : "Add Company"}
         </button>
       </div>
     </form>
-  )
-}
+  );
+};
 
-export default CompanyForm
-
+export default CompanyForm;

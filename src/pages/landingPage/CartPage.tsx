@@ -13,6 +13,9 @@ import { useAppDispatch, useAppSelector } from "../../store/store";
 import { getProfile } from "../../store/selectors/userSelector";
 import UserRoleEnum from "../../constant/userRoleEnum";
 import useAuth from "../../hooks/useAuth";
+import useFetch from "../../hooks/useFetch";
+import { useMemo, useState } from "react";
+import ICourier from "../../types/ICourier";
 
 const CartPage = () => {
   const { isAuth } = useAuth();
@@ -20,16 +23,42 @@ const CartPage = () => {
   const profile = useAppSelector(getProfile);
   const cartItems = useAppSelector(getAllCartItems);
   const { isBulkOrder } = useAppSelector(getCartDetail);
+  const [seletedShipping, setSelectedShipping] = useState("select");
   const dispatch = useAppDispatch();
+  const { data: shipping } = useFetch<ICourier[]>({
+    url: "/courier-charges",
+    initialLoad: true,
+  });
 
   // Calculate cart totals
   const subtotal = cartItems.reduce(
     (total, item) => total + (item?.price ?? 0) * item.quantity,
     0
   );
-  const shipping = 466;
-  const discount = 120;
-  const total = subtotal + shipping - discount;
+
+  const weightKG = cartItems.reduce(
+    (total, item) => total + (item.quantity * (item?.weight || 0)),
+    0
+  );
+
+  const shippingAmount = useMemo(() => {
+    const selectedShipping = shipping?.find(
+      (s) => s.serviceCompany === seletedShipping
+    );
+    if (!selectedShipping) return 0;
+
+    if (weightKG <= 1) {
+      return selectedShipping.firstKGCost;
+    } else {
+      const extraWeight = weightKG - 1;
+      return (
+        selectedShipping.firstKGCost! +
+        extraWeight * (selectedShipping.extraKGCost || 0)
+      );
+    }
+  }, [seletedShipping, weightKG, shipping]);
+  const discount = 0;
+  const total = subtotal + shippingAmount! - discount;
 
   const handleUpdateQuantity = (itemId: string, newQuantity: number) => {
     if (newQuantity < 1) return; // Prevents negative quantity
@@ -163,6 +192,32 @@ const CartPage = () => {
           )}
 
           <div className="border-t border-b py-4 space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Shipping Options
+              </label>
+              <select
+                defaultValue={seletedShipping}
+                onChange={(e) => setSelectedShipping(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500"
+              >
+                <option value="select" disabled>
+                  Select
+                </option>
+                {shipping
+                  ?.filter((item) => item.status === "Active")
+                  ?.map((item) => {
+                    return (
+                      <option
+                        key={item.serviceCompany}
+                        value={item.serviceCompany}
+                      >
+                        {item.serviceCompany}
+                      </option>
+                    );
+                  })}
+              </select>
+            </div>
             <div className="flex justify-between">
               <span>Sub-total</span>
               <span className="font-bold">LKR {subtotal}</span>
@@ -170,7 +225,7 @@ const CartPage = () => {
 
             <div className="flex justify-between">
               <span>Shipping</span>
-              <span className="font-bold">LKR {shipping}</span>
+              <span className="font-bold">LKR {shippingAmount}</span>
             </div>
 
             <div className="flex justify-between">

@@ -1,106 +1,128 @@
-import { useState, useEffect } from "react"
-import type { Company } from "../../types"
-import { Plus } from "lucide-react"
-import SearchBar from "../../components/ui/SearchBar"
-import ActionButtons from "../../components/ui/ActionButtons"
-import PageHeader from "../../components/ui/PageHeader"
-import DataTable from "../../components/tables/DataTable"
-import Modal from "../../components/ui/Modal"
-import CompanyForm from "../../features/company/CompanyForm"
+import { useState, useEffect } from "react";
+import { Plus } from "lucide-react";
+import SearchBar from "../../components/ui/SearchBar";
+import ActionButtons from "../../components/ui/ActionButtons";
+import PageHeader from "../../components/ui/PageHeader";
+import DataTable from "../../components/tables/DataTable";
+import Modal from "../../components/ui/Modal";
+import CompanyForm from "../../features/company/CompanyForm";
+import useFetch from "../../hooks/useFetch";
+import useApiFetch from "../../hooks/useApiFetch";
+import ICompany from "../../types/ICompany";
 
 const CompanyPage = () => {
-  const [companies, setCompanies] = useState<Company[]>([])
-  const [searchTerm, setSearchTerm] = useState("")
-  const [showAddCompanyModal, setShowAddCompanyModal] = useState(false)
-  const [currentCompany, setCurrentCompany] = useState<Company | undefined>(undefined)
+  const {
+    data: fetchedCompanies,
+  } = useFetch<ICompany[]>({
+    url: "/company",
+    initialLoad: true,
+  });
+  const [companies, setCompanies] = useState<ICompany[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showAddCompanyModal, setShowAddCompanyModal] = useState(false);
+  const [currentCompany, setCurrentCompany] = useState<ICompany | undefined>(
+    undefined
+  );
 
+  // Sync fetched companies to local state
   useEffect(() => {
-    // Load mock companies data
-    const mockCompanies: Company[] = [
-      {
-        id: 1,
-        companyID: "COMP001",
-        cmpName: "Acme Corporation",
-        cmpPhone: "+94 123 456 789",
-        cmpAddress: "123 Main Street, Colombo, Western Province, 10100",
-        billRefNo: "BILL001",
-        paymentTerms: "Net 30 Days",
-        creditLimit: "100000",
-      },
-      {
-        id: 2,
-        companyID: "COMP002",
-        cmpName: "Global Enterprises",
-        cmpPhone: "+94 987 654 321",
-        cmpAddress: "456 Business Avenue, Kandy, Central Province, 20000",
-        billRefNo: "BILL002",
-        paymentTerms: "Net 15 Days",
-        creditLimit: "75000",
-      },
-    ]
+    if (fetchedCompanies) {
+      setCompanies(fetchedCompanies);
+    }
+  }, [fetchedCompanies]);
 
-    setCompanies(mockCompanies)
-  }, [])
+  // Create company API hook
+  const {
+    postData: createCompany,
+  } = useApiFetch<ICompany>({
+    url: "/company",
+    options: { method: "post" },
+  });
 
-  // Update the handleAddCompany function to correctly handle form submission
-  const handleAddCompany = (companyData: Omit<Company, "id" | "companyID">) => {
+  // Update company API hook
+  const {
+    postData: updateCompany,
+  } = useApiFetch<ICompany>({
+    url: currentCompany ? `/company/${currentCompany._id}` : "",
+    options: { method: "patch" },
+  });
+
+  // Delete company API hook
+  const {
+    postData: deleteCompany,
+  } = useApiFetch<ICompany>({
+    url: currentCompany ? `/company/${currentCompany._id}` : "",
+    options: { method: "delete" },
+  });
+
+  const handleAddCompany = async (
+    companyData: Omit<ICompany, "_id">
+  ) => {
     if (currentCompany) {
       // Update existing company
-      setCompanies(
-        companies.map((company) =>
-          company.id === currentCompany.id ? { ...currentCompany, ...companyData } : company,
-        ),
-      )
+      const updated = await updateCompany(companyData);
+      if (updated) {
+        setCompanies(
+          companies.map((company) =>
+            company._id === currentCompany._id ? updated : company
+          )
+        );
+      }
     } else {
       // Add new company
-      const newCompany: Company = {
-        ...companyData,
-        id: Date.now(),
-        companyID: `COMP${Math.floor(1000 + Math.random() * 9000)}`,
+      const created = await createCompany(companyData);
+      if (created) {
+        setCompanies([...companies, created]);
       }
-      setCompanies([...companies, newCompany])
     }
 
-    setShowAddCompanyModal(false)
-    setCurrentCompany(undefined)
-  }
+    setShowAddCompanyModal(false);
+    setCurrentCompany(undefined);
+  };
 
-  const handleEditCompany = (company: Company) => {
-    setCurrentCompany(company)
-    setShowAddCompanyModal(true)
-  }
+  const handleEditCompany = (company: ICompany) => {
+    setCurrentCompany(company);
+    setShowAddCompanyModal(true);
+  };
 
-  const handleDeleteCompany = (id: number) => {
+  const handleDeleteCompany = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this company?")) {
-      setCompanies(companies.filter((company) => company.id !== id))
+      setCurrentCompany(companies.find((c) => c._id === id));
+      const deleted = await deleteCompany({} as ICompany);
+      if (deleted) {
+        setCompanies(companies.filter((company) => company._id !== id));
+      }
+      setCurrentCompany(undefined);
     }
-  }
+  };
 
   // Filter companies based on search term
   const filteredCompanies = companies.filter(
     (company) =>
-      company.cmpName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      company.companyID.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      company.billRefNo.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      company.CMPName.toLowerCase().includes(searchTerm.toLowerCase()) 
+      // company.companyID.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      // company.billRefNo.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const columns = [
-    { header: "Company ID", accessor: "companyID" },
-    { header: "Company Name", accessor: "cmpName" },
-    { header: "Phone", accessor: "cmpPhone" },
-    { header: "Bill Ref No", accessor: "billRefNo" },
-    { header: "Payment Terms", accessor: "paymentTerms" },
+    { header: "Company ID", accessor: (company: ICompany) => company?._id?.slice(15) },
+    { header: "Company Name", accessor:(company: ICompany) => company.CMPName },
+    { header: "Phone", accessor:(company: ICompany) =>company.CMPPhone },
+    { header: "Payment Terms", accessor: (company: ICompany) => company.paymentTerms },
     {
       header: "Credit Limit",
-      accessor: (company: Company) => `LKR ${company.creditLimit}`,
+      accessor: (company: ICompany) => `LKR ${company.creditLimit}`,
     },
     {
       header: "Actions",
-      accessor: (company: Company) => (
-        <ActionButtons onEdit={() => handleEditCompany(company)} onDelete={() => handleDeleteCompany(company.id)} />
+      accessor: (company: ICompany) => (
+        <ActionButtons
+          onEdit={() => handleEditCompany(company)}
+          onDelete={() => handleDeleteCompany(company._id || "")}
+        />
       ),
     },
-  ]
+  ];
 
   return (
     <>
@@ -109,8 +131,8 @@ const CompanyPage = () => {
         action={
           <button
             onClick={() => {
-              setCurrentCompany(undefined)
-              setShowAddCompanyModal(true)
+              setCurrentCompany(undefined);
+              setShowAddCompanyModal(true);
             }}
             className="bg-indigo-600 text-white py-2 px-4 rounded-md flex items-center hover:bg-indigo-700"
           >
@@ -123,17 +145,20 @@ const CompanyPage = () => {
       {/* Search Bar */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
         <div className="p-4 border-b flex flex-col sm:flex-row justify-between gap-4">
-          <SearchBar value={searchTerm} onChange={setSearchTerm} placeholder="Search companies..." />
+          <SearchBar
+            value={searchTerm}
+            onChange={setSearchTerm}
+            placeholder="Search companies..."
+          />
         </div>
       </div>
 
       {/* Companies List */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
         <DataTable
-        // @ts-expect-error @ts-ignore
           columns={columns}
           data={filteredCompanies}
-          keyExtractor={(company) => company.id}
+          keyExtractor={(company: ICompany) => company?._id || ""}
           emptyMessage={
             searchTerm
               ? "No companies found. Try changing your search term."
@@ -146,8 +171,8 @@ const CompanyPage = () => {
       <Modal
         isOpen={showAddCompanyModal}
         onClose={() => {
-          setShowAddCompanyModal(false)
-          setCurrentCompany(undefined)
+          setShowAddCompanyModal(false);
+          setCurrentCompany(undefined);
         }}
         title={currentCompany ? "Edit Company" : "Add Company"}
       >
@@ -155,14 +180,13 @@ const CompanyPage = () => {
           initialData={currentCompany}
           onSubmit={handleAddCompany}
           onCancel={() => {
-            setShowAddCompanyModal(false)
-            setCurrentCompany(undefined)
+            setShowAddCompanyModal(false);
+            setCurrentCompany(undefined);
           }}
         />
       </Modal>
     </>
-  )
-}
+  );
+};
 
-export default CompanyPage
-
+export default CompanyPage;
