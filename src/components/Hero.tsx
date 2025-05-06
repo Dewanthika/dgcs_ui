@@ -8,7 +8,7 @@ const Hero = () => {
       className="bg-secondary text-black py-16 md:py-24 bg-cover bg-center h-[400px] flex align-center"
       style={{ backgroundImage: "url('/HeroImage1.webp')" }}
     >
-      <div className="max-w-2xl mx-auto space-y-6">
+      {/* <div className="max-w-2xl mx-auto space-y-6">
         <div>
           {!isAuth && (
             <Link
@@ -19,7 +19,7 @@ const Hero = () => {
             </Link>
           )}
         </div>
-      </div>
+      </div> */}
     </section>
   );
 };

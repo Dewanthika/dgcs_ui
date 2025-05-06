@@ -8,6 +8,7 @@ import {
   Building2,
   User,
   BarChart3,
+  PackageSearch
 } from "lucide-react";
 import { useAppSelector } from "../store/store";
 import { getProfile } from "../store/selectors/userSelector";
@@ -31,11 +32,11 @@ const AdminSidebar = () => {
     <div className="w-64 bg-white border-r">
       <div className="p-6">
         <Link to="/" className="text-xl font-bold">
-        <img
-              src="/Logo.png?height=40&width=40"
-              alt="Admin"
-              className="w-full h-[100px] object-cover"
-            />
+          <img
+            src="/Logo.png?height=40&width=40"
+            alt="Admin"
+            className="w-full h-[100px] object-cover"
+          />
         </Link>
       </div>
 
@@ -94,7 +95,7 @@ const AdminSidebar = () => {
           </Link>
         )}
 
-        {hasAccess([UserRoleEnum.ADMIN, UserRoleEnum.STAFF]) && (
+        {/* {hasAccess([UserRoleEnum.ADMIN, UserRoleEnum.STAFF]) && (
           <Link
             to="/dashboard/inventory"
             className={`px-4 py-3 flex items-center ${
@@ -105,6 +106,20 @@ const AdminSidebar = () => {
           >
             <Warehouse className="w-5 h-5 mr-3" />
             Inventory
+          </Link>
+        )} */}
+
+        {hasAccess([UserRoleEnum.ADMIN]) && (
+          <Link
+            to="/dashboard/delivery"
+            className={`px-4 py-3 flex items-center ${
+              isActive("/dashboard/delivery")
+                ? "bg-indigo-50 text-indigo-700 font-medium"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            <PackageSearch className="w-5 h-5 mr-3" />
+            Delivery
           </Link>
         )}
 

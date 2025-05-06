@@ -10,7 +10,7 @@ import CreateOrderPage from "./pages/CreateOrderPage";
 import CustomerOrderViewPage from "./pages/CustomerOrderViewPage";
 import EditOrderPage from "./pages/EditOrderPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
-import InventoryPage from "./pages/inventory/InventoryPage";
+// import InventoryPage from "./pages/inventory/InventoryPage";
 import LoginPage from "./pages/auth/LoginPage";
 import MyAccountPage from "./pages/MyAccountPage";
 import OrdersListPage from "./pages/orders/OrdersListPage";
@@ -32,6 +32,7 @@ import CategoryPage from "./pages/category";
 import CreateCategory from "./pages/category/CreateCategory";
 import ShopPage from "./pages/shop/ShopPage";
 import HomePage from "./pages/home/HomePage";
+import DeliveryAdd from "./pages/DeliveryAdd/DeliveryAdd";
 
 function App() {
   return (
@@ -108,7 +109,7 @@ function App() {
               />
             }
           >
-            <Route path="/dashboard/inventory" element={<InventoryPage />} />
+            <Route path="/dashboard/inventory" element={<></>} />
             <Route path="/dashboard/shipping" element={<ShippingPage />} />
           </Route>
 
@@ -127,6 +128,7 @@ function App() {
           <Route element={<RoleGuard allowedRoles={[UserRoleEnum.ADMIN]} />}>
             <Route path="/dashboard/users" element={<UsersPage />} />
             <Route path="/dashboard/reports" element={<ReportsPage />} />
+            <Route path="/dashboard/delivery" element={<DeliveryAdd />} />
           </Route>
         </Route>
 

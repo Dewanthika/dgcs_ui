@@ -1,15 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Plus, Minus } from "lucide-react";
-import { getAllProducts } from "../services/productService";
 import { useOrderWebSocket } from "../hooks/useOrderWebSocket";
-
-interface Product {
-  _id?: string;
-  title: string;
-  price: number;
-  stock?: number;
-}
+import useGetAllProduct from "../hooks/useGetAllProduct";
+import IProduct from "../types/IProduct";
 
 interface OrderItem {
   productId: string;
@@ -32,15 +26,17 @@ interface OrderFormData {
   totalAmount: number;
   orderStatus: string;
   orderDate: string;
+  trackingLink?: string;
 }
 
 const EditOrderPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Partial<IProduct>[]>([]);
   // const [loading, setLoading] = useState(true);
-  
+
   const orderData = useOrderWebSocket({ id });
+  const allProducts = useGetAllProduct();
 
   const [formData, setFormData] = useState<OrderFormData>({
     customerName: "",
@@ -61,13 +57,12 @@ const EditOrderPage = () => {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const allProducts = await getAllProducts();
         // Transform products to match our Product interface
-        const transformedProducts = allProducts.map(product => ({
+        const transformedProducts = allProducts.map((product) => ({
           // _id: product._id.toString(),
-          title: product.title,
-          price: product.price,
-          stock: product.stock
+          productName: product.productName || "",
+          price: product.price || 0,
+          stock: product.stock || 0,
         }));
         setProducts(transformedProducts);
       } catch (err) {
@@ -76,12 +71,14 @@ const EditOrderPage = () => {
     };
 
     loadProducts();
-  }, []);
+  }, [allProducts]);
 
   useEffect(() => {
     if (orderData) {
       setFormData({
-        customerName: `${orderData.userID?.fName || ""} ${orderData.userID?.lName || ""}`,
+        customerName: `${orderData.userID?.fName || ""} ${
+          orderData.userID?.lName || ""
+        }`,
         contact: orderData.userID?.phone || "",
         email: orderData.userID?.email || "",
         address: orderData.deliveryAddress?.street || "",
@@ -98,23 +95,33 @@ const EditOrderPage = () => {
         })),
         totalAmount: orderData.totalAmount || 0,
         orderStatus: orderData.orderStatus || "Processing",
-        orderDate: orderData.orderDate?.split("T")[0] || new Date().toISOString().split("T")[0],
+        orderDate:
+          orderData.orderDate?.split("T")[0] ||
+          new Date().toISOString().split("T")[0],
       });
       // setLoading(false);
     }
   }, [orderData]);
 
   useEffect(() => {
-    const total = formData.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const total = formData.items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
     setFormData((prev) => ({ ...prev, totalAmount: total }));
   }, [formData.items]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleProductChange = (index: number, e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleProductChange = (
+    index: number,
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
     const productId = e.target.value;
     const selectedProduct = products.find((p) => p._id === productId);
     if (!selectedProduct) return;
@@ -123,13 +130,16 @@ const EditOrderPage = () => {
     updatedItems[index] = {
       ...updatedItems[index],
       productId,
-      productTitle: selectedProduct.title,
-      price: selectedProduct.price,
+      productTitle: selectedProduct.productName || "",
+      price: selectedProduct.price || 0,
     };
     setFormData((prev) => ({ ...prev, items: updatedItems }));
   };
 
-  const handleQuantityChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleQuantityChange = (
+    index: number,
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const quantity = Number(e.target.value);
     if (quantity < 1) return;
 
@@ -141,7 +151,10 @@ const EditOrderPage = () => {
   const addProductRow = () => {
     setFormData((prev) => ({
       ...prev,
-      items: [...prev.items, { productId: "", productTitle: "", quantity: 1, price: 0 }],
+      items: [
+        ...prev.items,
+        { productId: "", productTitle: "", quantity: 1, price: 0 },
+      ],
     }));
   };
 
@@ -174,15 +187,23 @@ const EditOrderPage = () => {
   //   );
   // }
 
+  console.log({ products });
+
   return (
     <>
       <h1 className="text-2xl font-bold mb-6">Edit Order</h1>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <form
+        onSubmit={handleSubmit}
+        className="grid grid-cols-1 md:grid-cols-2 gap-8"
+      >
         {/* Customer Information */}
         <div className="space-y-6">
           <div>
-            <label htmlFor="customerName" className="block mb-2 text-sm font-medium text-gray-700">
+            <label
+              htmlFor="customerName"
+              className="block mb-2 text-sm font-medium text-gray-700"
+            >
               Customer name
             </label>
             <input
@@ -197,7 +218,10 @@ const EditOrderPage = () => {
           </div>
 
           <div>
-            <label htmlFor="contact" className="block mb-2 text-sm font-medium text-gray-700">
+            <label
+              htmlFor="contact"
+              className="block mb-2 text-sm font-medium text-gray-700"
+            >
               Contact
             </label>
             <input
@@ -212,7 +236,10 @@ const EditOrderPage = () => {
           </div>
 
           <div>
-            <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-700">
+            <label
+              htmlFor="email"
+              className="block mb-2 text-sm font-medium text-gray-700"
+            >
               Email (Optional)
             </label>
             <input
@@ -226,7 +253,10 @@ const EditOrderPage = () => {
           </div>
 
           <div>
-            <label htmlFor="address" className="block mb-2 text-sm font-medium text-gray-700">
+            <label
+              htmlFor="address"
+              className="block mb-2 text-sm font-medium text-gray-700"
+            >
               Address
             </label>
             <input
@@ -241,7 +271,10 @@ const EditOrderPage = () => {
           </div>
 
           <div>
-            <label htmlFor="city" className="block mb-2 text-sm font-medium text-gray-700">
+            <label
+              htmlFor="city"
+              className="block mb-2 text-sm font-medium text-gray-700"
+            >
               City
             </label>
             <input
@@ -256,7 +289,10 @@ const EditOrderPage = () => {
           </div>
 
           <div>
-            <label htmlFor="district" className="block mb-2 text-sm font-medium text-gray-700">
+            <label
+              htmlFor="district"
+              className="block mb-2 text-sm font-medium text-gray-700"
+            >
               District
             </label>
             <input
@@ -271,7 +307,10 @@ const EditOrderPage = () => {
           </div>
 
           <div>
-            <label htmlFor="postalCode" className="block mb-2 text-sm font-medium text-gray-700">
+            <label
+              htmlFor="postalCode"
+              className="block mb-2 text-sm font-medium text-gray-700"
+            >
               Postal Code
             </label>
             <input
@@ -285,8 +324,31 @@ const EditOrderPage = () => {
             />
           </div>
 
+          {formData.orderStatus === "Processing" && (
+            <div>
+              <label
+                htmlFor="trackingLink"
+                className="block mb-2 text-sm font-medium text-gray-700"
+              >
+                Tracking Link
+              </label>
+              <input
+                type="text"
+                id="trackingLink"
+                name="trackingLink"
+                value={formData.trackingLink}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                required
+              />
+            </div>
+          )}
+
           <div>
-            <label htmlFor="orderStatus" className="block mb-2 text-sm font-medium text-gray-700">
+            <label
+              htmlFor="orderStatus"
+              className="block mb-2 text-sm font-medium text-gray-700"
+            >
               Order Status
             </label>
             <select
@@ -306,7 +368,10 @@ const EditOrderPage = () => {
           </div>
 
           <div>
-            <label htmlFor="paymentDate" className="block mb-2 text-sm font-medium text-gray-700">
+            <label
+              htmlFor="paymentDate"
+              className="block mb-2 text-sm font-medium text-gray-700"
+            >
               Payment Date
             </label>
             <input
@@ -320,7 +385,10 @@ const EditOrderPage = () => {
           </div>
 
           <div>
-            <label htmlFor="paymentStatus" className="block mb-2 text-sm font-medium text-gray-700">
+            <label
+              htmlFor="paymentStatus"
+              className="block mb-2 text-sm font-medium text-gray-700"
+            >
               Payment Status
             </label>
             <select
@@ -349,7 +417,13 @@ const EditOrderPage = () => {
             {formData.items.map((item, index) => (
               <div key={index} className="flex items-end gap-4">
                 <div className="flex-1">
-                  <label className={index === 0 ? "block mb-2 text-sm font-medium text-gray-700" : "sr-only"}>
+                  <label
+                    className={
+                      index === 0
+                        ? "block mb-2 text-sm font-medium text-gray-700"
+                        : "sr-only"
+                    }
+                  >
                     Product Title
                   </label>
                   <select
@@ -361,14 +435,20 @@ const EditOrderPage = () => {
                     <option value="">Select a product</option>
                     {products.map((product) => (
                       <option key={product._id} value={product._id}>
-                        {product.title} - LKR {product.price} ({product.stock || 0} in stock)
+                        {product.productName} - ({product.stock || 0} in stock)
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div className="w-32">
-                  <label className={index === 0 ? "block mb-2 text-sm font-medium text-gray-700" : "sr-only"}>
+                  <label
+                    className={
+                      index === 0
+                        ? "block mb-2 text-sm font-medium text-gray-700"
+                        : "sr-only"
+                    }
+                  >
                     Quantity
                   </label>
                   <input
