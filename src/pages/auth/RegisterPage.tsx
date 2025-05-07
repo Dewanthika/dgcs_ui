@@ -42,8 +42,8 @@ const RegisterPage = () => {
                   {...register("userType")}
                   className="w-full p-2 border border-gray-300 rounded-md"
                 >
-                  <option value="Admin">Admin</option>
-                  <option value="Staff">Staff</option>
+                  {/* <option value="Admin">Admin</option> */}
+                  {/* <option value="Staff">Staff</option> */}
                   <option value="Individual">Individual Customer</option>
                   <option value="Company">Company Customer</option>
                 </select>

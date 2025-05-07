@@ -29,7 +29,7 @@ const PaymentSuccessPage = () => {
       </div>
 
       {/* Payment Details */}
-      <div className="max-w-md mx-auto space-y-6">
+      {/* <div className="max-w-md mx-auto space-y-6">
         <div className="flex justify-between">
           <div className="text-gray-600">Ref Number</div>
           <div className="font-medium">{paymentDetails.refNumber}</div>
@@ -59,7 +59,7 @@ const PaymentSuccessPage = () => {
           <div className="text-gray-600">Shipping Fee</div>
           <div className="font-medium">LKR {paymentDetails.shippingFee.toFixed(2)}</div>
         </div>
-      </div>
+      </div> */}
 
       {/* Action Buttons */}
       <div className="mt-12 text-center">
