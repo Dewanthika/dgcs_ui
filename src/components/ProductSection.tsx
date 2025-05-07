@@ -10,7 +10,11 @@ interface IProductSectionProps {
   products: IProduct[];
 }
 
-const ProductSection = ({ title, subtitle, products }: IProductSectionProps) => {
+const ProductSection = ({
+  title,
+  subtitle,
+  products,
+}: IProductSectionProps) => {
   const dispatch = useAppDispatch();
 
   return (
@@ -32,8 +36,6 @@ const ProductSection = ({ title, subtitle, products }: IProductSectionProps) => 
               id={product._id!}
               title={product.productName}
               price={+product.price!}
-              originalPrice={product.price}
-              discountPercentage={product.price}
               imageUrl={product.imageURL || ""}
               handleAddToCart={() => {
                 dispatch(addToCart({ product, quantity: 1 }));

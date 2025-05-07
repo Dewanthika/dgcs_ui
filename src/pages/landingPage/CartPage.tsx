@@ -5,6 +5,7 @@ import {
   getCartDetail,
 } from "../../store/selectors/cartSelector";
 import {
+  addOrderDetails,
   removeFromCart,
   updateBulkOrder,
   updateQuantity,
@@ -37,7 +38,7 @@ const CartPage = () => {
   );
 
   const weightKG = cartItems.reduce(
-    (total, item) => total + (item.quantity * (item?.weight || 0)),
+    (total, item) => total + item.quantity * (item?.weight || 0),
     0
   );
 
@@ -70,6 +71,7 @@ const CartPage = () => {
   };
 
   const handleCheckout = () => {
+    dispatch(addOrderDetails({ shippingAmount, discount }));
     navigate(isAuth ? "/checkout" : "/login");
   };
 

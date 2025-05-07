@@ -9,12 +9,18 @@ interface CartState {
   items: CartItem[];
   isBulkOrder: boolean;
   isCredit: boolean;
+  total: number,
+  shippingAmount: number,
+  discount: number,
 }
 
 const initialState: CartState = {
   items: [],
   isBulkOrder: false,
   isCredit: false,
+  total: 0,
+  shippingAmount: 0,
+  discount: 0,
 };
 
 const cartSlice = createSlice({
@@ -55,6 +61,12 @@ const cartSlice = createSlice({
     clearCart: (state) => {
       state.items = [];
     },
+
+    addOrderDetails: (state, action) => {
+      const { shippingAmount, discount } = action.payload;
+      state.shippingAmount = shippingAmount;
+      state.discount = discount;
+    }
   },
 });
 
@@ -65,6 +77,7 @@ export const {
   clearCart,
   updateBulkOrder,
   updateCreditOrder,
+  addOrderDetails
 } = cartSlice.actions;
 
 export default cartSlice.reducer;

@@ -136,8 +136,6 @@ const ShopPage = () => {
                     id={product._id!}
                     title={product.productName}
                     price={+product.price!}
-                    originalPrice={product.price}
-                    discountPercentage={product.price}
                     imageUrl={product.imageURL || ""}
                     handleAddToCart={() => {
                       dispatch(addToCart({ product, quantity: 1 }));

@@ -4,8 +4,6 @@ interface ProductCardProps {
   id: string;
   title: string;
   price: number;
-  originalPrice?: number;
-  discountPercentage?: number;
   imageUrl: string;
   handleAddToCart: () => void;
 }
@@ -14,8 +12,6 @@ const ProductCard = ({
   id,
   title,
   price,
-  originalPrice,
-  discountPercentage,
   imageUrl,
   handleAddToCart,
 }: ProductCardProps) => {
@@ -37,21 +33,7 @@ const ProductCard = ({
         </Link>
         <p className="text-sm text-muted">Product Description</p>
         <div>
-          {originalPrice ? (
-            <div className="space-y-1">
-              <div className="font-bold">Now LKR {price}</div>
-              <div className="text-xs text-gray-500 line-through">
-                Was LKR {originalPrice}
-              </div>
-              {discountPercentage && (
-                <span className="text-xs text-danger font-medium">
-                  (-{discountPercentage}%)
-                </span>
-              )}
-            </div>
-          ) : (
-            <div className="font-bold">LKR {price}</div>
-          )}
+          <div className="font-bold">LKR {price}</div>
         </div>
         <button
           onClick={handleAddToCart}

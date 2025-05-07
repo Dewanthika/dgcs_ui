@@ -233,7 +233,7 @@ const OrdersListPage = () => {
                       <div className="text-xs text-gray-500">{order.contact}</div>
                     </td>
                     <td className="px-4 py-3 text-sm">{order.orderDate}</td>
-                    <td className="px-4 py-3 text-sm font-medium">LKR {order.totalAmount.toFixed(2)}</td>
+                    <td className="px-4 py-3 text-sm font-medium">LKR {(+order.totalAmount + +order?.deliveryCharge).toFixed(2)}</td>
                     <td className="px-4 py-3 text-sm">
                       <span
                         className={`px-2 py-1 rounded-full text-xs ${

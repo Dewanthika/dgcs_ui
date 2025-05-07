@@ -39,7 +39,8 @@ const CheckoutPage = () => {
   const profile = useAppSelector(getProfile);
 
   const cartItems = useAppSelector(getAllCartItems);
-  const { isBulkOrder, isCredit } = useAppSelector(getCartDetail);
+  const { isBulkOrder, isCredit, shippingAmount, discount } =
+    useAppSelector(getCartDetail);
   const dispatch = useAppDispatch();
 
   const {
@@ -53,8 +54,8 @@ const CheckoutPage = () => {
     (total, item) => total + (item.price || 0) * item.quantity,
     0
   );
-  const shipping = 400;
-  const total = subtotal + shipping;
+  const shipping = shippingAmount;
+  const total = subtotal + shipping - discount;
 
   const handleQuantityChange = (id: string, newQuantity: number) => {
     if (newQuantity < 1) return; // Prevents negative quantity
@@ -92,7 +93,7 @@ const CheckoutPage = () => {
       isBulkOrder,
       isCredit,
       orderWeight,
-      deliveryCharge: 0,
+      deliveryCharge: shipping,
       orderStatus: "",
       totalAmount: total,
       paymentMethod: "",
@@ -115,12 +116,17 @@ const CheckoutPage = () => {
             quantity: item.quantity,
             unitPrice: item.price,
             product: item._id,
+            productName: item.productName,
           })),
           customerEmail: profile?.email,
           formData: {
             ...data,
             isBulkOrder,
             isCredit,
+            totalAmount: total,
+            orderWeight,
+            deliveryCharge: shipping,
+            discount
           },
         },
       });
