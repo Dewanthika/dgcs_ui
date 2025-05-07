@@ -97,17 +97,17 @@ const CompanyPage = () => {
   };
 
   // Filter companies based on search term
-  const filteredCompanies = companies.filter(
-    (company) =>
-      company.CMPName.toLowerCase().includes(searchTerm.toLowerCase()) 
-      // company.companyID.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      // company.billRefNo.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // const filteredCompanies = companies.filter(
+  //   (company) =>
+  //     company.CMPName.toLowerCase().includes(searchTerm.toLowerCase()) 
+  //     company.companyID.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     company.billRefNo.toLowerCase().includes(searchTerm.toLowerCase())
+  // );
 
   const columns = [
     { header: "Company ID", accessor: (company: ICompany) => company?._id?.slice(15) },
-    { header: "Company Name", accessor:(company: ICompany) => company.CMPName },
-    { header: "Phone", accessor:(company: ICompany) =>company.CMPPhone },
+    // { header: "Company Name", accessor:(company: ICompany) => company.CMPName },
+    // { header: "Phone", accessor:(company: ICompany) =>company.CMPPhone },
     { header: "Payment Terms", accessor: (company: ICompany) => company.paymentTerms },
     {
       header: "Credit Limit",
@@ -157,7 +157,7 @@ const CompanyPage = () => {
       <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
         <DataTable
           columns={columns}
-          data={filteredCompanies}
+          data={companies}
           keyExtractor={(company: ICompany) => company?._id || ""}
           emptyMessage={
             searchTerm

@@ -1,19 +1,18 @@
-import { Link, useLocation } from "react-router-dom";
 import {
-  LayoutGrid,
-  ShoppingCart,
-  Package,
-  Warehouse,
-  Truck,
-  Building2,
-  User,
   BarChart3,
-  PackageSearch
+  Building2,
+  LayoutGrid,
+  Package,
+  PackageSearch,
+  ShoppingCart,
+  Truck,
+  User
 } from "lucide-react";
-import { useAppSelector } from "../store/store";
-import { getProfile } from "../store/selectors/userSelector";
+import { Link, useLocation } from "react-router-dom";
 import UserRoleEnum from "../constant/userRoleEnum";
 import useAuth from "../hooks/useAuth";
+import { getProfile } from "../store/selectors/userSelector";
+import { useAppSelector } from "../store/store";
 
 const AdminSidebar = () => {
   const location = useLocation();
@@ -137,7 +136,7 @@ const AdminSidebar = () => {
           </Link>
         )}
 
-        {hasAccess([UserRoleEnum.ADMIN, UserRoleEnum.COMPANY]) && (
+        {hasAccess([UserRoleEnum.ADMIN]) && (
           <Link
             to="/dashboard/company"
             className={`px-4 py-3 flex items-center ${

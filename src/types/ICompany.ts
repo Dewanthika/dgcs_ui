@@ -1,12 +1,10 @@
 interface ICompany {
-    _id?: string;
-    CMPName: string;
-    CMPPhone: string;
-    CMPAddress: string;
-    BizRegNo: string;
-    creditLimit: number;
-    paymentTerms: string;
-  }
-  
-  export default ICompany;
-  
+  _id?: string;
+  userId: string;
+  creditLimit: number;
+  discount: number;
+  paymentTerms: string;
+  status: string;
+}
+
+export default ICompany;
