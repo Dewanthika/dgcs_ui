@@ -324,7 +324,7 @@ const EditOrderPage = () => {
             />
           </div>
 
-          {formData.orderStatus === "Processing" && (
+          {formData.orderStatus === "Shipped" && (
             <div>
               <label
                 htmlFor="trackingLink"
@@ -427,7 +427,7 @@ const EditOrderPage = () => {
                     Product Title
                   </label>
                   <select
-                    value={item.productId}
+                    defaultValue={item.productTitle || ""}
                     onChange={(e) => handleProductChange(index, e)}
                     className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     required

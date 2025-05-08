@@ -17,6 +17,7 @@ import useAuth from "../../hooks/useAuth";
 import useFetch from "../../hooks/useFetch";
 import { useMemo, useState } from "react";
 import ICourier from "../../types/ICourier";
+import ICompany from "../../types/ICompany";
 
 const CartPage = () => {
   const { isAuth } = useAuth();
@@ -31,11 +32,21 @@ const CartPage = () => {
     initialLoad: true,
   });
 
+  const { data: company } = useFetch<ICompany>({
+    url: `/company/find-one-by-user/${profile?._id}`,
+    initialLoad: true,
+  });
+
+  const isCompanyActive = company?.status?.toLowerCase() === "active";
+
   // Calculate cart totals
   const subtotal = cartItems.reduce(
     (total, item) => total + (item?.price ?? 0) * item.quantity,
     0
   );
+
+  // Calculate cart totals
+  const quantity = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   const weightKG = cartItems.reduce(
     (total, item) => total + item.quantity * (item?.weight || 0),
@@ -58,7 +69,7 @@ const CartPage = () => {
       );
     }
   }, [seletedShipping, weightKG, shipping]);
-  const discount = 0;
+  const discount = isCompanyActive && quantity > 25 ? company?.discount! : 0;
   const total = subtotal + shippingAmount! - discount;
 
   const handleUpdateQuantity = (itemId: string, newQuantity: number) => {
@@ -71,7 +82,7 @@ const CartPage = () => {
   };
 
   const handleCheckout = () => {
-    dispatch(addOrderDetails({ shippingAmount, discount }));
+    dispatch(addOrderDetails({ shippingAmount, discount, isCompanyActive }));
     navigate(isAuth ? "/checkout" : "/login");
   };
 
@@ -178,7 +189,7 @@ const CartPage = () => {
         <div>
           <h2 className="text-xl font-bold mb-4">Summary</h2>
 
-          {profile?.userType !== UserRoleEnum.INDIVIDUAL && (
+          {profile?.userType !== UserRoleEnum.INDIVIDUAL && isCompanyActive && (
             <div className="border rounded-md p-4 mb-6">
               <label className="flex items-center">
                 <input

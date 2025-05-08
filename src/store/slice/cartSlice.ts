@@ -9,15 +9,17 @@ interface CartState {
   items: CartItem[];
   isBulkOrder: boolean;
   isCredit: boolean;
-  total: number,
-  shippingAmount: number,
-  discount: number,
+  isCompanyActive: boolean;
+  total: number;
+  shippingAmount: number;
+  discount: number;
 }
 
 const initialState: CartState = {
   items: [],
   isBulkOrder: false,
   isCredit: false,
+  isCompanyActive: false,
   total: 0,
   shippingAmount: 0,
   discount: 0,
@@ -27,11 +29,12 @@ const cartSlice = createSlice({
   name: "cart",
   initialState,
   reducers: {
-    addToCart: (state, action: PayloadAction<{ product: IProduct; quantity: number }>) => {
+    addToCart: (
+      state,
+      action: PayloadAction<{ product: IProduct; quantity: number }>
+    ) => {
       const { product, quantity } = action.payload;
-      const existingItem = state.items.find(
-        (item) => item._id === product._id
-      );
+      const existingItem = state.items.find((item) => item._id === product._id);
 
       if (existingItem) {
         existingItem.quantity += quantity;
@@ -63,10 +66,11 @@ const cartSlice = createSlice({
     },
 
     addOrderDetails: (state, action) => {
-      const { shippingAmount, discount } = action.payload;
+      const { shippingAmount, discount, isCompanyActive } = action.payload;
       state.shippingAmount = shippingAmount;
       state.discount = discount;
-    }
+      state.isCompanyActive = isCompanyActive;
+    },
   },
 });
 
@@ -77,7 +81,7 @@ export const {
   clearCart,
   updateBulkOrder,
   updateCreditOrder,
-  addOrderDetails
+  addOrderDetails,
 } = cartSlice.actions;
 
 export default cartSlice.reducer;
