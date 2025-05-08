@@ -55,7 +55,10 @@ const CheckoutPage = () => {
     0
   );
   const shipping = shippingAmount;
-  const total = subtotal + shipping - discount;
+  const totalBeforeDiscount = subtotal + shippingAmount!;
+
+  const discountAmount = totalBeforeDiscount * (discount / 100);
+  const total = totalBeforeDiscount - discountAmount;
 
   const handleQuantityChange = (id: string, newQuantity: number) => {
     if (newQuantity < 1) return; // Prevents negative quantity
@@ -126,7 +129,7 @@ const CheckoutPage = () => {
             totalAmount: total,
             orderWeight,
             deliveryCharge: shipping,
-            discount
+            discount,
           },
         },
       });
@@ -355,6 +358,11 @@ const CheckoutPage = () => {
               <div className="flex justify-between">
                 <span>Shipping</span>
                 <span className="font-medium">LKR {shipping}</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span>Discount</span>
+                <span className="font-bold">{discount} %</span>
               </div>
 
               <div className="flex justify-between pt-3 border-t text-lg font-bold">

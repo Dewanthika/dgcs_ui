@@ -70,7 +70,11 @@ const CartPage = () => {
     }
   }, [seletedShipping, weightKG, shipping]);
   const discount = isCompanyActive && quantity > 25 ? company?.discount! : 0;
-  const total = subtotal + shippingAmount! - discount;
+
+  const totalBeforeDiscount = subtotal + shippingAmount!;
+
+  const discountAmount = totalBeforeDiscount * (discount / 100);
+  const total = totalBeforeDiscount - discountAmount;
 
   const handleUpdateQuantity = (itemId: string, newQuantity: number) => {
     if (newQuantity < 1) return; // Prevents negative quantity
@@ -243,7 +247,7 @@ const CartPage = () => {
 
             <div className="flex justify-between">
               <span>Discount</span>
-              <span className="font-bold">LKR {discount}</span>
+              <span className="font-bold">{discount} %</span>
             </div>
           </div>
 
