@@ -147,6 +147,17 @@ const ProductForm = ({ initialData, onCancel }: ProductFormProps) => {
             required
           />
         </FormField>
+        <FormField label="Reoder Level" id="stock" required>
+          <input
+            type="number"
+            id="stock"
+            {...register("reorderLevel", {
+              required: "Reorder Level is required",
+            })}
+            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            required
+          />
+        </FormField>
       </div>
 
       <FormField label="Product Images" id="images">

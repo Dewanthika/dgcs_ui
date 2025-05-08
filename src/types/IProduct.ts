@@ -7,6 +7,7 @@ interface IProduct {
   price?: number;
   weight?: number;
   stock?: number;
+  reorderLevel?: number;
   categoryID: string | ICategory;
   imageURL?: string;
   image?: string; // For file upload
