@@ -31,7 +31,7 @@ const ProductCard = ({
         <Link to={`/product/${id}`} className="font-medium hover:underline">
           {title}
         </Link>
-        <p className="text-sm text-muted">Product Description</p>
+        {/* <p className="text-sm text-muted">Product Description</p> */}
         <div>
           <div className="font-bold">LKR {price}</div>
         </div>

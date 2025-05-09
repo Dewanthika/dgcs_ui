@@ -55,13 +55,13 @@ const ProductDetailPage = () => {
           <h1 className="text-4xl font-bold">{product.productName}</h1>
           <div className="text-2xl font-bold">LKR {product.price}</div>
 
-          {product.price && (
+          {/* {product.price && (
             <div className="flex items-center gap-2">
               <span className="text-gray-500 line-through">
                 LKR {product.price}
               </span>
             </div>
-          )}
+          )} */}
           <div className="space-y-2 border-t pt-6">
             <h2 className="font-bold text-lg">Description</h2>
             <p className="text-gray-700">{product.productDescription}</p>

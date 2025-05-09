@@ -3,6 +3,7 @@ import useFetch from "../../../hooks/useFetch";
 import { getProfile } from "../../../store/selectors/userSelector";
 import { useAppSelector } from "../../../store/store";
 import ICompany from "../../../types/ICompany";
+import { useState } from "react";
 
 interface IOrder {
   _id: string;
@@ -12,10 +13,20 @@ interface IOrder {
 }
 
 const VendorDashboardPage = () => {
-  // const [selectedPeriod, setSelectedPeriod] = useState("This Month");
   const profile = useAppSelector(getProfile);
+  const [selectedOrder, setSelectedOrder] = useState<IOrder | null>(null);
+  const [showModal, setShowModal] = useState(false);
 
-  // Fetch company data from backend
+  const handleView = (order: IOrder) => {
+    setSelectedOrder(order);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedOrder(null);
+    setShowModal(false);
+  };
+
   const {
     data: companies,
     error: companyError,
@@ -34,6 +45,7 @@ const VendorDashboardPage = () => {
     url: `/orders/total/${profile?._id}`,
     initialLoad: true,
   });
+
   const { data: totalRev } = useFetch<IOrder[]>({
     url: `/orders/revenue/${profile?._id}`,
     initialLoad: true,
@@ -41,17 +53,9 @@ const VendorDashboardPage = () => {
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      {/* Main Content */}
       <div className="flex-1 p-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold">Vendor Dashboard</h1>
-
-          {/* <div className="relative inline-block">
-            <button className="flex items-center border rounded px-3 py-1.5 bg-white">
-              {selectedPeriod}
-              <ChevronDown className="ml-2 w-4 h-4" />
-            </button>
-          </div> */}
+          <h1 className="text-2xl font-bold">Company User Dashboard</h1>
         </div>
 
         {/* Stats Cards */}
@@ -59,7 +63,7 @@ const VendorDashboardPage = () => {
           <div className="bg-white rounded-lg p-6 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-sm">Total Sales</p>
+                <p className="text-gray-500 text-sm">Total Purchase</p>
                 <p className="text-2xl font-bold mt-1">
                   LKR {totalRev?.totalRevenue?.toLocaleString()}
                 </p>
@@ -83,46 +87,19 @@ const VendorDashboardPage = () => {
               </div>
             </div>
           </div>
-
-          {/* <div className="bg-white rounded-lg p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Total Products</p>
-                <p className="text-2xl font-bold mt-1">{stats.totalProducts}</p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
-                <Package className="w-6 h-6 text-orange-600" />
-              </div>
-            </div>
-          </div> */}
-          {/* 
-          <div className="bg-white rounded-lg p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm">Total Revenue</p>
-                <p className="text-2xl font-bold mt-1">
-                  LKR {totalRev?.toLocaleString()}
-                </p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-purple-600" />
-              </div>
-            </div>
-          </div> */}
         </div>
 
-        {/* Products and Orders */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <div>
+        {/* Company Data & Orders */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+          <div className="lg:col-span-1">
             <h2 className="text-xl font-bold mb-4">Company Data</h2>
             {companyLoading && <p>Loading company data...</p>}
             {companyError && (
               <p className="text-red-600">Error loading company data</p>
             )}
-            {!companyLoading &&
-              !companyError &&
-              companies &&
-              companies.length === 0 && <p>No company data available.</p>}
+            {!companyLoading && !companyError && companies?.length === 0 && (
+              <p>No company data available.</p>
+            )}
             {!companyLoading &&
               !companyError &&
               companies &&
@@ -133,9 +110,6 @@ const VendorDashboardPage = () => {
                       key={company._id}
                       className="bg-white rounded-lg shadow-sm p-4"
                     >
-                      {/* <h3 className="text-lg font-semibold mb-2">
-                        Company User ID: {company.userId}
-                      </h3> */}
                       <p>Credit Limit: {company.creditLimit}</p>
                       <p>Discount: {company.discount}</p>
                       <p>Payment Terms: {company.paymentTerms}</p>
@@ -147,12 +121,9 @@ const VendorDashboardPage = () => {
           </div>
 
           {/* Recent Orders */}
-          <div>
+          <div className="lg:col-span-2">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold">Recent Orders</h2>
-              <button className="text-indigo-600 text-sm hover:underline">
-                View All
-              </button>
             </div>
 
             <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -164,29 +135,35 @@ const VendorDashboardPage = () => {
                         Order ID
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
-                        Customer
-                      </th>
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
                         Date
                       </th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
                         Status
                       </th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
+                        Action
+                      </th>
                     </tr>
                   </thead>
+
                   <tbody className="divide-y">
                     {companyOrders &&
-                      companyOrders?.map((order) => (
+                      companyOrders.map((order) => (
                         <tr key={order._id} className="hover:bg-gray-50">
                           <td className="px-4 py-2 text-sm">#{order._id}</td>
                           <td className="px-4 py-2 text-sm">
                             {new Date(order.orderDate).toLocaleDateString()}
                           </td>
-                          <td className="px-4 py-2 text-sm">
+                          <td className="px-4 py-2 text-sm capitalize">
                             {order.orderStatus}
                           </td>
                           <td className="px-4 py-2 text-sm">
-                            LKR {order.totalAmount.toLocaleString()}
+                            <button
+                              onClick={() => handleView(order)}
+                              className="text-indigo-600 hover:underline cursor-pointer"
+                            >
+                              View
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -196,6 +173,51 @@ const VendorDashboardPage = () => {
             </div>
           </div>
         </div>
+
+        {/* Modal with blur background */}
+        {showModal && selectedOrder && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-black/40">
+            <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md mx-4">
+              <h2 className="text-xl font-semibold text-gray-700 mb-6 text-center">
+                Order Details
+              </h2>
+
+              <div className="space-y-4">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Order ID:</span>
+                  <span className="text-gray-500">#{selectedOrder._id}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Date:</span>
+                  <span className="text-gray-500">
+                    {new Date(selectedOrder.orderDate).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Status:</span>
+                  <span className=" capitalize bg-green-500 py-1 px-3 shadow-lg rounded-md text-sm text-white">
+                    {selectedOrder.orderStatus}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Total:</span>
+                  <span className="text-gray-500">
+                    LKR {selectedOrder.totalAmount.toLocaleString()}
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-8 flex justify-end">
+                <button
+                  onClick={handleCloseModal}
+                  className="px-5 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

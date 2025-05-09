@@ -7,7 +7,7 @@ import IProduct from "../types/IProduct";
 
 interface OrderItem {
   productId: string;
-  productTitle: string;
+  productName: string;
   quantity: number;
   price: number;
 }
@@ -48,7 +48,7 @@ const EditOrderPage = () => {
     postalCode: "",
     paymentDate: "",
     paymentStatus: "Pending",
-    items: [{ productId: "", productTitle: "", quantity: 1, price: 0 }],
+    items: [{ productId: "", productName: "", quantity: 1, price: 0 }],
     totalAmount: 0,
     orderStatus: "Processing",
     orderDate: new Date().toISOString().split("T")[0],
@@ -89,7 +89,7 @@ const EditOrderPage = () => {
         paymentStatus: orderData.paymentStatus || "Pending",
         items: orderData.items.map((item: any) => ({
           productId: item.product?._id || "",
-          productTitle: item.product?.title || "",
+          productName: item.product?.title || "",
           quantity: item.quantity,
           price: item.unitPrice,
         })),
@@ -130,7 +130,7 @@ const EditOrderPage = () => {
     updatedItems[index] = {
       ...updatedItems[index],
       productId,
-      productTitle: selectedProduct.productName || "",
+      productName: selectedProduct.productName || "",
       price: selectedProduct.price || 0,
     };
     setFormData((prev) => ({ ...prev, items: updatedItems }));
@@ -153,7 +153,7 @@ const EditOrderPage = () => {
       ...prev,
       items: [
         ...prev.items,
-        { productId: "", productTitle: "", quantity: 1, price: 0 },
+        { productId: "", productName: "", quantity: 1, price: 0 },
       ],
     }));
   };
@@ -427,7 +427,7 @@ const EditOrderPage = () => {
                     Product Title
                   </label>
                   <select
-                    defaultValue={item.productTitle || ""}
+                    value={item.productName || ""}
                     onChange={(e) => handleProductChange(index, e)}
                     className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     required

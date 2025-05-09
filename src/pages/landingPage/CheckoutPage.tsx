@@ -84,6 +84,7 @@ const CheckoutPage = () => {
           product: item._id as string,
           quantity: item.quantity,
           unitPrice: item.price ?? 0,
+          productName: item.productName,
         })),
       orderType: "instore",
       deliveryAddress: {
