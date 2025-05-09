@@ -186,7 +186,7 @@ const RegisterPage = () => {
               </FormField>
             </div>
 
-            <div>
+            {/* <div>
               <FormField label="Status" id="status" required>
                 <select
                   {...register("status")}
@@ -197,7 +197,7 @@ const RegisterPage = () => {
                   <option value="pending">Pending</option>
                 </select>
               </FormField>
-            </div>
+            </div> */}
 
             {/* Password */}
             <FormField label="Password" id="password" required>

@@ -129,7 +129,7 @@ const AdminDashboardPage = () => {
         {/* Inventory Summary */}
         <div>
           <div className="mb-4">
-            <h2 className="text-xl font-bold">Low Product</h2>
+            <h2 className="text-xl font-bold">Stock Low Products</h2>
           </div>
 
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -142,7 +142,7 @@ const AdminDashboardPage = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="bg-gray-50">
-                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Product ID</th>
+                      {/* <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Product ID</th> */}
                       <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Name</th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Unit Price</th>
                       <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Stock</th>
@@ -160,7 +160,7 @@ const AdminDashboardPage = () => {
                             : "hover:bg-gray-50"
                         }
                       >
-                        <td className="px-4 py-3 text-sm">{item._id}</td>
+                        {/* <td className="px-4 py-3 text-sm">{item._id}</td> */}
                         <td className="px-4 py-3 text-sm">{item.productName}</td>
                         <td className="px-4 py-3 text-sm">LKR {item.price}</td>
                         <td className="px-4 py-3 text-sm font-semibold text-red-700">
