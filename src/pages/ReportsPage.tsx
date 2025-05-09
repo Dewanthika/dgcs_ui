@@ -12,18 +12,18 @@ const ReportsPage = () => {
 
   // Mock data for reports
   const salesData = [
-    { month: "Jan", revenue: 45000, orders: 120, growth: 5.2 },
-    { month: "Feb", revenue: 52000, orders: 145, growth: 15.5 },
-    { month: "Mar", revenue: 48000, orders: 130, growth: -7.7 },
+    // { month: "Jan", revenue: 45000, orders: 120, growth: 5.2 },
+    // { month: "Feb", revenue: 52000, orders: 145, growth: 15.5 },
+    // { month: "Mar", revenue: 48000, orders: 130, growth: -7.7 },
     { month: "Apr", revenue: 51000, orders: 142, growth: 6.3 },
     { month: "May", revenue: 58000, orders: 160, growth: 13.7 },
-    { month: "Jun", revenue: 62000, orders: 175, growth: 6.9 },
-    { month: "Jul", revenue: 68000, orders: 190, growth: 9.7 },
-    { month: "Aug", revenue: 72000, orders: 210, growth: 5.9 },
-    { month: "Sep", revenue: 69000, orders: 200, growth: -4.2 },
-    { month: "Oct", revenue: 74000, orders: 220, growth: 7.2 },
-    { month: "Nov", revenue: 82000, orders: 245, growth: 10.8 },
-    { month: "Dec", revenue: 96000, orders: 280, growth: 17.1 },
+    // { month: "Jun", revenue: 62000, orders: 175, growth: 6.9 },
+    // { month: "Jul", revenue: 68000, orders: 190, growth: 9.7 },
+    // { month: "Aug", revenue: 72000, orders: 210, growth: 5.9 },
+    // { month: "Sep", revenue: 69000, orders: 200, growth: -4.2 },
+    // { month: "Oct", revenue: 74000, orders: 220, growth: 7.2 },
+    // { month: "Nov", revenue: 82000, orders: 245, growth: 10.8 },
+    // { month: "Dec", revenue: 96000, orders: 280, growth: 17.1 },
   ]
 
   const productData = [
