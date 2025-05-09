@@ -20,13 +20,15 @@ interface OrderFormData {
   city: string;
   district: string;
   postalCode: string;
-  paymentDate: string;
+  // paymentDate: string;
   paymentStatus: string;
   items: OrderItem[];
   totalAmount: number;
   orderStatus: string;
   orderDate: string;
   trackingLink?: string;
+  paymentMethod: string;
+  isCredit: boolean;
 }
 
 const EditOrderPage = () => {
@@ -46,12 +48,14 @@ const EditOrderPage = () => {
     city: "",
     district: "",
     postalCode: "",
-    paymentDate: "",
+    // paymentDate: "",
     paymentStatus: "Pending",
     items: [{ productId: "", productName: "", quantity: 1, price: 0 }],
     totalAmount: 0,
     orderStatus: "Processing",
     orderDate: new Date().toISOString().split("T")[0],
+    paymentMethod: "",
+    isCredit: false,
   });
 
   useEffect(() => {
@@ -74,6 +78,7 @@ const EditOrderPage = () => {
   }, [allProducts]);
 
   useEffect(() => {
+    console.log({ orderData });
     if (orderData) {
       setFormData({
         customerName: `${orderData.userID?.fName || ""} ${
@@ -85,21 +90,25 @@ const EditOrderPage = () => {
         city: orderData.deliveryAddress?.city || "",
         district: orderData.deliveryAddress?.state || "",
         postalCode: orderData.deliveryAddress?.zip || "",
-        paymentDate: orderData.paymentDate?.split("T")[0] || "",
+
         paymentStatus: orderData.paymentStatus || "Pending",
         items: orderData.items.map((item: any) => ({
           productId: item.product?._id || "",
-          productName: item.product?.title || "",
+          productName: item.productName || "",
           quantity: item.quantity,
           price: item.unitPrice,
         })),
         totalAmount: orderData.totalAmount || 0,
         orderStatus: orderData.orderStatus || "Processing",
-        orderDate:
-          orderData.orderDate?.split("T")[0] ||
-          new Date().toISOString().split("T")[0],
+        orderDate: orderData.orderDate
+          ? orderData.orderDate.slice(0, 10)
+          : new Date().toISOString().split("T")[0],
+        paymentMethod: orderData.paymentMethod || "",
+        isCredit: orderData.isCredit || false,
       });
-      // setLoading(false);
+
+      console.log("Raw orderDate:", orderData.orderDate);
+      console.log("Parsed orderDate:", orderData.orderDate?.slice(0, 10));
     }
   }, [orderData]);
 
@@ -187,7 +196,7 @@ const EditOrderPage = () => {
   //   );
   // }
 
-  console.log({ products });
+  console.log({ products: formData.orderStatus });
 
   return (
     <>
@@ -324,7 +333,7 @@ const EditOrderPage = () => {
             />
           </div>
 
-          {formData.orderStatus === "Shipped" && (
+          {formData.orderStatus === "shipped" && (
             <div>
               <label
                 htmlFor="trackingLink"
@@ -354,56 +363,67 @@ const EditOrderPage = () => {
             <select
               id="orderStatus"
               name="orderStatus"
-              value={formData.orderStatus}
+              defaultValue={formData.orderStatus.toLowerCase()}
               onChange={handleInputChange}
               className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
               required
             >
-              <option value="Processing">Processing</option>
-              <option value="Shipped">Shipped</option>
-              <option value="Delivered">Delivered</option>
-              <option value="Cancelled">Cancelled</option>
-              <option value="Returned">Returned</option>
+              <option value="processing">Processing</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="returned">Returned</option>
             </select>
           </div>
 
           <div>
             <label
-              htmlFor="paymentDate"
+              htmlFor="orderDate"
               className="block mb-2 text-sm font-medium text-gray-700"
             >
-              Payment Date
+              Order Date
             </label>
             <input
               type="date"
-              id="paymentDate"
-              name="paymentDate"
-              value={formData.paymentDate}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              id="orderDate"
+              name="orderDate"
+              value={formData.orderDate}
+              disabled
+              className="w-full p-2 border border border-gray-300 rounded-md bg-gray-100 text-gray-700"
             />
           </div>
 
           <div>
             <label
               htmlFor="paymentStatus"
-              className="block mb-2 text-sm font-medium text-gray-700"
+              className="mb-2 pr-4 text-sm font-medium text-gray-700"
             >
               Payment Status
             </label>
-            <select
-              id="paymentStatus"
-              name="paymentStatus"
-              value={formData.paymentStatus}
-              onChange={handleInputChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              required
-            >
-              <option value="Pending">Pending</option>
-              <option value="Paid">Paid</option>
-              <option value="Failed">Failed</option>
-              <option value="Refunded">Refunded</option>
-            </select>
+
+            {formData.paymentMethod === "stripe" ? (
+              <span className="inline-block px-5 py-1 bg-green-400 text-white text-sm rounded-sm shadow-md">
+                Paid
+              </span>
+            ) : formData.isCredit ? (
+              <select
+                id="paymentStatus"
+                name="paymentStatus"
+                value={formData.paymentStatus}
+                onChange={handleInputChange}
+                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                required
+              >
+                <option value="pending">Pending</option>
+                <option value="paid">Paid</option>
+                <option value="failed">Failed</option>
+                <option value="refunded">Refunded</option>
+              </select>
+            ) : (
+              <span className="inline-block px-3 py-1 bg-gray-100 text-gray-800 text-sm rounded-md">
+                {formData.paymentStatus}
+              </span>
+            )}
           </div>
         </div>
 
@@ -414,76 +434,87 @@ const EditOrderPage = () => {
           </div>
 
           <div className="space-y-4">
-            {formData.items.map((item, index) => (
-              <div key={index} className="flex items-end gap-4">
-                <div className="flex-1">
-                  <label
-                    className={
-                      index === 0
-                        ? "block mb-2 text-sm font-medium text-gray-700"
-                        : "sr-only"
-                    }
-                  >
-                    Product Title
-                  </label>
-                  <select
-                    value={item.productName || ""}
-                    onChange={(e) => handleProductChange(index, e)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    required
-                  >
-                    <option value="">Select a product</option>
-                    {products.map((product) => (
-                      <option key={product._id} value={product._id}>
-                        {product.productName} - ({product.stock || 0} in stock)
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="w-32">
-                  <label
-                    className={
-                      index === 0
-                        ? "block mb-2 text-sm font-medium text-gray-700"
-                        : "sr-only"
-                    }
-                  >
-                    Quantity
-                  </label>
-                  <input
-                    type="number"
-                    value={item.quantity}
-                    onChange={(e) => handleQuantityChange(index, e)}
-                    min="1"
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    required
-                  />
-                </div>
-
-                <div>
-                  {index === 0 ? (
-                    <button
-                      type="button"
-                      onClick={addProductRow}
-                      className="p-2 bg-indigo-100 text-indigo-700 rounded-full hover:bg-indigo-200"
-                      title="Add product"
+            {orderData ? (
+              <ul>
+                {formData.items.map((item, index) => (
+                  <li key={index}>
+                    {item?.productName} - {item.quantity}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              formData.items.map((item, index) => (
+                <div key={index} className="flex items-end gap-4">
+                  <div className="flex-1">
+                    <label
+                      className={
+                        index === 0
+                          ? "block mb-2 text-sm font-medium text-gray-700"
+                          : "sr-only"
+                      }
                     >
-                      <Plus size={20} />
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => removeProductRow(index)}
-                      className="p-2 bg-red-100 text-red-700 rounded-full hover:bg-red-200"
-                      title="Remove product"
+                      Product Title
+                    </label>
+                    <select
+                      value={item.productName || ""}
+                      onChange={(e) => handleProductChange(index, e)}
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      required
                     >
-                      <Minus size={20} />
-                    </button>
-                  )}
+                      <option value="">Select a product</option>
+                      {products.map((product) => (
+                        <option key={product._id} value={product._id}>
+                          {product.productName} - ({product.stock || 0} in
+                          stock)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="w-32">
+                    <label
+                      className={
+                        index === 0
+                          ? "block mb-2 text-sm font-medium text-gray-700"
+                          : "sr-only"
+                      }
+                    >
+                      Quantity
+                    </label>
+                    <input
+                      type="number"
+                      value={item.quantity}
+                      onChange={(e) => handleQuantityChange(index, e)}
+                      min="1"
+                      className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    {index === 0 ? (
+                      <button
+                        type="button"
+                        onClick={addProductRow}
+                        className="p-2 bg-indigo-100 text-indigo-700 rounded-full hover:bg-indigo-200"
+                        title="Add product"
+                      >
+                        <Plus size={20} />
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => removeProductRow(index)}
+                        className="p-2 bg-red-100 text-red-700 rounded-full hover:bg-red-200"
+                        title="Remove product"
+                      >
+                        <Minus size={20} />
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
 
           <div className="mt-8 p-4 bg-gray-50 rounded-md">

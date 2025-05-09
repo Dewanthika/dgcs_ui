@@ -1,10 +1,9 @@
+
 import useFetch from "../../../hooks/useFetch";
 import IOrder from "../../../types/IOrder";
-import IProduct from "../../../types/IProduct";
 import IUser from "../../../types/IUser";
 
 const AdminDashboardPage = () => {
-
   const { data: totalOrdersCount } = useFetch<{ totalOrders: number }>({
     url: "/orders/total-last-30-days",
     initialLoad: true,
@@ -25,7 +24,6 @@ const AdminDashboardPage = () => {
     initialLoad: true,
   });
 
-  // Mock data for the dashboard except totalOrders, totalCustomers, totalRevenue, and newCustomers
   const stats = {
     totalOrders: totalOrdersCount?.totalOrders ?? 0,
     totalCustomers: totalCustomersCount?.totalCustomers ?? 0,
@@ -38,7 +36,7 @@ const AdminDashboardPage = () => {
     initialLoad: true,
   });
 
-  const { data: lowStockProducts } = useFetch<IProduct[]>({
+  const { data: lowStockProducts, isLoading, error } = useFetch<any[]>({
     url: "/product/low-stock",
     initialLoad: true,
   });
@@ -74,7 +72,7 @@ const AdminDashboardPage = () => {
         </div>
 
         <div className="bg-white border border-yellow-200 rounded-lg p-6">
-          <p className="text-gray-700 font-medium">New Customer</p>
+          <p className="text-gray-700 font-medium">New Customers</p>
           <p className="text-xs text-gray-500 mb-2">Last 30 days</p>
           <p className="text-4xl font-bold">{stats.newCustomers}</p>
         </div>
@@ -89,31 +87,14 @@ const AdminDashboardPage = () => {
           </div>
 
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-            {/* <div className="p-4 border-b flex justify-end">
-              <div className="relative inline-block">
-                <button className="flex items-center border rounded px-3 py-1.5 text-sm">
-                  {selectedMonth}
-                  <ChevronDown className="ml-2 w-4 h-4" />
-                </button>
-              </div>
-            </div> */}
-
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="bg-gray-50">
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
-                      Order ID
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
-                      Customer
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
-                      Type
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
-                      Status
-                    </th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Order ID</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Customer</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Type</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -123,10 +104,20 @@ const AdminDashboardPage = () => {
                         #{order._id.slice(18).toUpperCase()}
                       </td>
                       <td className="px-4 py-3 text-sm">
-                        {(order.userID as IUser).fName}
+                        {(order.userID as IUser).fName || "Company"}
                       </td>
                       <td className="px-4 py-3 text-sm">{order.orderType}</td>
-                      <td className="px-4 py-3 text-sm">{order.orderStatus}</td>
+                      <td className="px-4 py-3 text-sm">
+                        {order.orderStatus?.toLowerCase() === "complete" ? (
+                          <span className="inline-block px-2 py-1 text-xs font-semibold text-white bg-green-400 rounded-sm shadow-lg">
+                            Complete
+                          </span>
+                        ) : (
+                          <span className="inline-block px-2 py-1 text-xs font-semibold text-white bg-yellow-400 rounded-sm shadow-lg">
+                            Pending
+                          </span>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -143,39 +134,43 @@ const AdminDashboardPage = () => {
 
           <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gray-50">
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
-                      Product ID
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
-                      Name
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
-                      Unit Price
-                    </th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">
-                      Stock
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {lowStockProducts?.map((item, index) => (
-                    <tr
-                      key={index}
-                      // className={`hover:bg-gray-50 ${
-                      //   item.stock < 5 ? "bg-red-200" : ""
-                      // }`}
-                    >
-                      <td className="px-4 py-3 text-sm">{item._id}</td>
-                      <td className="px-4 py-3 text-sm">{item.productName}</td>
-                      <td className="px-4 py-3 text-sm">lkr {item.price}</td>
-                      <td className="px-4 py-3 text-sm">{item.stock}</td>
+              {isLoading ? (
+                <p className="text-sm text-gray-500 px-4 py-2">Loading...</p>
+              ) : error ? (
+                <p className="text-sm text-red-500 px-4 py-2">{error}</p>
+              ) : (
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Product ID</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Name</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Unit Price</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Stock</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y">
+                    {lowStockProducts?.map((item, index) => (
+                      <tr
+                        key={index}
+                        className={
+                          item.stock !== undefined &&
+                          item.reorderLevel !== undefined &&
+                          item.stock <= item.reorderLevel
+                            ? "bg-red-50 hover:bg-red-100"
+                            : "hover:bg-gray-50"
+                        }
+                      >
+                        <td className="px-4 py-3 text-sm">{item._id}</td>
+                        <td className="px-4 py-3 text-sm">{item.productName}</td>
+                        <td className="px-4 py-3 text-sm">LKR {item.price}</td>
+                        <td className="px-4 py-3 text-sm font-semibold text-red-700">
+                          {item.stock}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         </div>

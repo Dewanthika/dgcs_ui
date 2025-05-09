@@ -98,9 +98,9 @@ const CheckoutPage = () => {
       isCredit,
       orderWeight,
       deliveryCharge: shipping,
-      orderStatus: "",
+      orderStatus: 'delivered',
       totalAmount: total,
-      paymentMethod: "",
+      paymentStatus: 'paid',
     };
 
     try {
